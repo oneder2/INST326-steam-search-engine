@@ -1,2 +1,385 @@
-# INST326-steam-searcher-engine
-INST326-steam-searcher-engine for term group project
+# Steam Game Search Engine
+
+An intelligent game discovery platform that combines advanced search algorithms with modern web technologies to help users find their next favorite Steam game.
+
+## 🎮 Project Overview
+
+The Steam Game Search Engine addresses the limitations of Steam's current search functionality by implementing:
+
+- **Intelligent Search**: Combines BM25 keyword matching with semantic search using vector embeddings
+- **Fusion Ranking**: Advanced algorithm that balances relevance, review quality, and player activity
+- **Advanced Filtering**: Comprehensive filters for price, platform, multiplayer type, and Steam Deck compatibility
+- **Modern Interface**: Responsive, Steam-themed UI built with React and TypeScript
+
+This project was developed as part of the **INST326 - Object-Oriented Programming** course at the University of Maryland.
+
+## 🚀 Features
+
+### Core Functionality
+- **Natural Language Search**: Search using phrases like "games like Hades" or "cozy farming games"
+- **Smart Recommendations**: Algorithm surfaces hidden gems alongside popular titles
+- **Real-time Suggestions**: Autocomplete functionality for improved search experience
+- **Detailed Game Information**: Comprehensive game details with quality metrics
+
+### Technical Features
+- **Type-Safe Development**: Full TypeScript implementation with comprehensive type definitions
+- **Component Library**: Reusable UI components with consistent Steam-themed design
+- **API Integration**: RESTful API client with error handling and caching
+- **Responsive Design**: Mobile-first approach with Tailwind CSS
+- **Function Documentation**: Comprehensive function library for code documentation
+
+## 🛠️ Technology Stack
+
+### Frontend (Next.js)
+- **Next.js 14** - React framework with SSR and routing
+- **TypeScript** - Type-safe JavaScript development
+- **Tailwind CSS** - Utility-first CSS framework with Steam theme
+- **React Hooks** - Modern state management
+- **Axios** - HTTP client for FastAPI backend communication
+
+### Backend (Python FastAPI)
+- **FastAPI** - High-performance Python web framework
+- **SQLite** - Lightweight database for game metadata
+- **Faiss** - Vector similarity search library for semantic search
+- **BM25** - Keyword search algorithm implementation
+- **Pydantic** - Data validation and serialization
+- **Sentence Transformers** - Text embedding generation
+- **Uvicorn** - ASGI server for production deployment
+
+### Development Tools
+- **ESLint** - Code linting and quality checks
+- **Prettier** - Code formatting
+- **Jest** - Unit testing framework
+- **TypeScript Compiler** - Type checking
+
+## 📁 Project Structure
+
+```
+steam-searcher-engine/
+├── docs/                          # Project documentation
+│   ├── functions/                 # Function library documentation
+│   ├── 技术文档/                   # Technical documentation
+│   └── 软需求文档/                 # Requirements documentation
+├── src/                           # Source code
+│   ├── components/                # React components
+│   │   ├── Layout/               # Layout components
+│   │   ├── Search/               # Search-related components
+│   │   └── FunctionLibrary/      # Function documentation components
+│   ├── pages/                    # Next.js pages
+│   ├── services/                 # API services and clients
+│   ├── types/                    # TypeScript type definitions
+│   ├── constants/                # Application constants
+│   ├── hooks/                    # Custom React hooks
+│   ├── utils/                    # Utility functions
+│   └── styles/                   # Global styles and CSS
+├── public/                       # Static assets
+├── package.json                  # Dependencies and scripts
+├── tsconfig.json                # TypeScript configuration
+├── tailwind.config.js           # Tailwind CSS configuration
+├── next.config.js               # Next.js configuration
+└── README.md                    # This file
+```
+
+## 🚀 Getting Started
+
+### Prerequisites
+
+- **Node.js** 18.0.0 or higher
+- **npm** 8.0.0 or higher
+- **Git** for version control
+
+### Installation
+
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/oneder2/INST326-steam-searcher-engine.git
+   cd INST326-steam-searcher-engine
+   ```
+
+2. **Install dependencies**
+   ```bash
+   npm install
+   ```
+
+3. **Set up environment variables**
+   ```bash
+   cp .env.local.example .env.local
+   # Edit .env.local with your configuration
+   ```
+
+4. **Start the development server**
+   ```bash
+   npm run dev
+   ```
+
+5. **Open your browser**
+   Navigate to [http://localhost:3000](http://localhost:3000)
+
+### Available Scripts
+
+- `npm run dev` - Start development server
+- `npm run build` - Build for production
+- `npm run start` - Start production server
+- `npm run lint` - Run ESLint
+- `npm run type-check` - Run TypeScript type checking
+- `npm test` - Run tests
+- `npm run test:watch` - Run tests in watch mode
+
+## 📖 Usage
+
+### Basic Search
+1. Navigate to the home page
+2. Enter your search query (e.g., "roguelike games", "games like Hades")
+3. View intelligent search results with relevance scores
+
+### Advanced Search
+1. Go to the Search page (`/search`)
+2. Use the search box for your query
+3. Apply filters for price, platform, multiplayer type
+4. Browse paginated results
+
+### Function Library
+1. Visit the Function Library page (`/function-library`)
+2. Browse documented functions by category
+3. Search for specific functions or features
+4. View code examples and implementation details
+
+## 🏗️ Architecture
+
+### System Architecture
+The Steam Game Search Engine follows a modern three-tier architecture:
+
+```
+Frontend (Next.js)  ←→  Backend (FastAPI)  ←→  Data Layer (SQLite + Indices)
+     │                        │                        │
+  React UI              Python Services           Game Database
+  TypeScript           Search Algorithms          Faiss Index
+  Tailwind CSS         API Endpoints              BM25 Index
+```
+
+### Frontend Architecture (Next.js)
+- **Pages**: Next.js pages handling routing and server-side rendering
+- **Components**: Reusable UI components with Steam-themed design
+- **Services**: API clients for FastAPI backend communication
+- **Types**: TypeScript definitions matching backend Pydantic models
+- **Hooks**: Custom React hooks for state management
+- **Utils**: Pure utility functions for data transformation
+
+### Backend Architecture (Python FastAPI)
+- **API Endpoints**: RESTful endpoints for search, game details, health checks
+- **Search Algorithms**: BM25 keyword search and Faiss semantic search
+- **Fusion Ranking**: Advanced algorithm combining multiple relevance signals
+- **Data Access**: SQLite database operations and index management
+- **Validation**: Input sanitization and security functions
+
+### Data Layer
+- **SQLite Database**: Game metadata (title, description, price, genres)
+- **Faiss Index**: Vector embeddings for semantic search
+- **BM25 Index**: Preprocessed keyword search index
+- **Game ID Mapping**: Index position to game ID relationships
+
+### API Design (FastAPI)
+- **RESTful Endpoints**: Standard HTTP methods and status codes
+- **Pydantic Models**: Type-safe request/response validation
+- **Error Handling**: Comprehensive error responses with proper HTTP codes
+- **Health Monitoring**: Built-in health checks and service status
+- **CORS Support**: Configured for frontend-backend communication
+
+## 📚 Python Backend Function Library
+
+The project includes a comprehensive function library documenting all Python FastAPI backend functions:
+
+### Categories
+- **API Endpoints**: FastAPI endpoint functions (search_games, get_game_detail, health_check)
+- **Search Algorithms**: BM25, Faiss semantic search, and fusion ranking algorithms
+- **Data Access**: SQLite database operations and index loading functions
+- **Validation & Security**: Input validation, sanitization, and security functions
+
+### Documentation Format
+Each Python function is documented with:
+- Detailed description and purpose
+- Python function signature with type hints
+- Usage examples with working Python code
+- Related functions and dependencies
+- Complexity assessment and performance notes
+- Integration with FastAPI framework
+
+### Function Examples
+- `search_games()` - Main FastAPI endpoint for game search
+- `apply_fusion_ranking()` - Core ranking algorithm
+- `search_bm25_index()` - BM25 keyword search implementation
+- `search_faiss_index()` - Semantic search with vector embeddings
+- `validate_search_query()` - Input validation and sanitization
+
+Visit `/function-library` to explore the complete Python backend documentation.
+
+## 🧪 Testing
+
+### Unit Tests
+```bash
+npm test                    # Run all tests
+npm run test:watch         # Run tests in watch mode
+npm run test:coverage      # Generate coverage report
+```
+
+### Type Checking
+```bash
+npm run type-check         # Check TypeScript types
+```
+
+### Linting
+```bash
+npm run lint               # Check code quality
+npm run lint:fix           # Fix auto-fixable issues
+```
+
+## 🚀 Deployment
+
+### Render.com Deployment
+
+The project is configured for deployment on Render.com with separate services for frontend and backend:
+
+#### Quick Deploy
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/oneder2/INST326-steam-searcher-engine)
+
+#### Manual Deployment
+1. **Backend Service** (Python FastAPI):
+   ```bash
+   # Build Command: pip install -r requirements.txt
+   # Start Command: uvicorn main:app --host 0.0.0.0 --port $PORT
+   ```
+
+2. **Frontend Service** (Next.js):
+   ```bash
+   # Build Command: npm ci && npm run build
+   # Start Command: npm start
+   ```
+
+#### Environment Variables
+
+**Frontend (Next.js)**:
+```env
+NEXT_PUBLIC_API_BASE_URL=https://steam-search-backend.onrender.com
+NEXT_PUBLIC_APP_URL=https://steam-search-frontend.onrender.com
+NEXT_PUBLIC_DEBUG=false
+```
+
+**Backend (FastAPI)**:
+```env
+PYTHON_VERSION=3.11.0
+ENVIRONMENT=production
+DATABASE_URL=sqlite:///data/games_data.db
+FAISS_INDEX_PATH=data/game_embeddings.faiss
+BM25_INDEX_PATH=data/bm25_index.pkl
+CORS_ORIGINS=https://steam-search-frontend.onrender.com
+```
+
+### Local Development
+```bash
+# Frontend
+npm run dev                # Start Next.js development server
+
+# Backend (when available)
+uvicorn main:app --reload  # Start FastAPI development server
+```
+
+See [DEPLOYMENT.md](DEPLOYMENT.md) for detailed deployment instructions.
+
+## 📋 FastAPI Backend Documentation
+
+### Core API Endpoints
+
+#### Search Games (FastAPI)
+```python
+@app.post("/api/v1/search/games", response_model=GameResultSchema)
+async def search_games(query: SearchQuerySchema) -> GameResultSchema:
+```
+
+**Request Body**:
+```json
+{
+  "query": "roguelike games",
+  "filters": {
+    "price_max": 30,
+    "coop_type": "Local",
+    "platform": ["Windows", "SteamDeck"]
+  },
+  "limit": 20,
+  "offset": 0
+}
+```
+
+#### Get Game Details (FastAPI)
+```python
+@app.get("/api/v1/games/{game_id}", response_model=GameDetailResponse)
+async def get_game_detail(game_id: int) -> GameDetailResponse:
+```
+
+#### Search Suggestions (FastAPI)
+```python
+@app.get("/api/v1/search/suggest", response_model=SearchSuggestionsResponse)
+async def get_search_suggestions(prefix: str) -> SearchSuggestionsResponse:
+```
+
+#### Health Check (FastAPI)
+```python
+@app.get("/api/v1/health", response_model=HealthResponse)
+async def health_check() -> HealthResponse:
+```
+
+### Backend Implementation
+- **Framework**: Python FastAPI with Pydantic models
+- **Database**: SQLite with async operations
+- **Search**: BM25 + Faiss semantic search
+- **Ranking**: Fusion algorithm combining multiple signals
+
+For complete API documentation, see:
+- [docs/技术文档/API 契约与后端实现文档.md](docs/技术文档/API%20契约与后端实现文档.md)
+- [docs/functions/backend/](docs/functions/backend/) - Python function documentation
+
+## 🤝 Contributing
+
+This is an academic project for INST326. For course-related contributions:
+
+1. Follow the established code style and conventions
+2. Add comprehensive tests for new features
+3. Update documentation for any API changes
+4. Ensure TypeScript types are properly defined
+
+### Code Style
+- Use TypeScript for all new code
+- Follow ESLint and Prettier configurations
+- Write comprehensive JSDoc comments
+- Use semantic commit messages
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🎓 Academic Information
+
+- **Course**: INST326 - Object-Oriented Programming
+- **Institution**: University of Maryland
+- **Semester**: Fall 2024
+- **Project Type**: Group Assignment
+
+## 🔗 Links
+
+- [Live Demo](https://steam-search-frontend.onrender.com) (Render Deployment)
+- [Backend API](https://steam-search-backend.onrender.com) (FastAPI Backend)
+- [Function Library](http://localhost:3000/function-library) (Python Backend Functions)
+- [API Status](http://localhost:3000/api-status) (Backend Health Monitoring)
+- [Technical Documentation](docs/技术文档/) (Architecture & API Contract)
+- [Requirements Documentation](docs/软需求文档/) (PRD & SRS)
+- [Deployment Guide](DEPLOYMENT.md) (Render.com Instructions)
+
+## 📞 Support
+
+For questions about this project:
+- Check the [Function Library](http://localhost:3000/function-library) for code documentation
+- Review the technical documentation in the `docs/` directory
+- Contact the development team through course channels
+
+---
+
+**Note**: This project is developed for educational purposes as part of the INST326 course at the University of Maryland. It demonstrates modern web development practices, API design, and software engineering principles.

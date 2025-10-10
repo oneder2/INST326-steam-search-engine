@@ -1,0 +1,238 @@
+# FastAPI Backend Dependencies for Steam Game Search Engine
+# Core framework and server
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+pydantic==2.5.0
+pydantic-settings==2.1.0
+
+# Database and ORM
+sqlite3  # Built into Python
+sqlalchemy==2.0.23
+alembic==1.13.1
+
+# Search and ML libraries
+faiss-cpu==1.7.4
+sentence-transformers==2.2.2
+rank-bm25==0.2.2
+numpy==1.24.3
+scikit-learn==1.3.2
+
+# HTTP and API utilities
+httpx==0.25.2
+requests==2.31.0
+aiofiles==23.2.1
+
+# Data processing
+pandas==2.1.4
+python-json-logger==2.0.7
+
+# Security and validation
+python-multipart==0.0.6
+python-jose[cryptography]==3.3.0
+passlib[bcrypt]==1.7.4
+cryptography==41.0.8
+
+# CORS and middleware
+python-cors==1.7.0
+
+# Environment and configuration
+python-dotenv==1.0.0
+click==8.1.7
+
+# Monitoring and logging
+structlog==23.2.0
+prometheus-client==0.19.0
+
+# Testing (for development)
+pytest==7.4.3
+pytest-asyncio==0.21.1
+pytest-cov==4.1.0
+httpx==0.25.2  # For testing API endpoints
+
+# Development tools
+black==23.11.0
+isort==5.12.0
+flake8==6.1.0
+mypy==1.7.1
+
+# Production server optimizations
+gunicorn==21.2.0
+gevent==23.9.1
+
+# Caching
+redis==5.0.1
+python-redis==5.0.1
+
+# File handling and utilities
+pathlib2==2.3.7
+typing-extensions==4.8.0
+
+# API documentation
+python-markdown==3.5.1
+
+# Performance monitoring
+psutil==5.9.6
+
+# Date and time utilities
+python-dateutil==2.8.2
+pytz==2023.3
+
+# JSON handling
+orjson==3.9.10
+
+# Async utilities
+asyncio-mqtt==0.16.1
+aioredis==2.0.1
+
+# Data validation and serialization
+marshmallow==3.20.1
+cerberus==1.3.5
+
+# HTTP client optimizations
+aiohttp==3.9.1
+httptools==0.6.1
+
+# Production deployment
+supervisor==4.2.5
+
+# Memory optimization
+pympler==0.9
+
+# Configuration management
+dynaconf==3.2.4
+
+# Rate limiting
+slowapi==0.1.9
+
+# Background tasks
+celery==5.3.4
+redis==5.0.1
+
+# File compression
+gzip==1.0.0
+
+# Unicode handling
+unidecode==1.3.7
+
+# Regular expressions
+regex==2023.10.3
+
+# Math and statistics
+scipy==1.11.4
+
+# Image processing (if needed for game screenshots)
+Pillow==10.1.0
+
+# URL handling
+yarl==1.9.3
+
+# Timezone handling
+zoneinfo==0.2.1
+
+# Process management
+psutil==5.9.6
+
+# Memory profiling
+memory-profiler==0.61.0
+
+# Code quality
+bandit==1.7.5
+safety==2.3.5
+
+# Documentation generation
+sphinx==7.2.6
+sphinx-rtd-theme==1.3.0
+
+# API rate limiting
+limits==3.6.0
+
+# Dependency injection
+dependency-injector==4.41.0
+
+# Configuration validation
+pydantic-yaml==1.2.0
+
+# Async database operations
+databases[sqlite]==0.8.0
+asyncpg==0.29.0
+
+# Background job processing
+rq==1.15.1
+
+# Metrics and monitoring
+statsd==4.0.1
+
+# Error tracking
+sentry-sdk[fastapi]==1.38.0
+
+# Health checks
+healthcheck==1.3.3
+
+# API versioning
+fastapi-versioning==0.10.0
+
+# Request ID tracking
+asgi-correlation-id==4.3.1
+
+# Middleware utilities
+starlette-context==0.3.6
+
+# OpenAPI customization
+fastapi-utils==0.2.1
+
+# Async context managers
+async-timeout==4.0.3
+
+# String utilities
+inflection==0.5.1
+
+# Functional programming utilities
+toolz==0.12.0
+
+# Concurrent processing
+concurrent-futures==3.1.1
+
+# File system utilities
+watchdog==3.0.0
+
+# Network utilities
+netifaces==0.11.0
+
+# System information
+distro==1.8.0
+
+# Cryptographic utilities
+bcrypt==4.1.2
+
+# UUID utilities
+shortuuid==1.0.11
+
+# Enum utilities
+enum34==1.1.10
+
+# Retry utilities
+tenacity==8.2.3
+
+# Caching utilities
+cachetools==5.3.2
+
+# Async utilities
+anyio==4.1.0
+
+# HTTP status codes
+http-status==0.2.1
+
+# URL parsing
+furl==2.1.3
+
+# Data structures
+dataclasses-json==0.6.3
+
+# Async iterators
+aioitertools==0.11.0
+
+# Performance profiling
+py-spy==0.3.14
+
+# Memory management
+gc-python-utils==0.1.0
