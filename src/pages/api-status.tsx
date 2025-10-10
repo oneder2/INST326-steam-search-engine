@@ -12,8 +12,8 @@ import { apiClient } from '@/services/api';
 interface HealthStatus {
   status: string;
   timestamp: number;
-  services: Record<string, string>;
-  version: string;
+  services?: Record<string, string>;
+  version?: string;
 }
 
 interface ApiStatusInfo {
@@ -48,7 +48,7 @@ export default function ApiStatusPage() {
     const startTime = Date.now();
     
     try {
-      const response = await apiClient.checkApiHealth();
+      const response = await apiClient.checkHealth();
       const responseTime = Date.now() - startTime;
       
       setApiStatus({
@@ -195,7 +195,7 @@ export default function ApiStatusPage() {
             <h2 className="text-xl font-semibold text-white mb-4">Service Status</h2>
             
             <div className="space-y-3">
-              {Object.entries(apiStatus.health.services).map(([service, status]) => (
+              {Object.entries(apiStatus.health.services || {}).map(([service, status]) => (
                 <div key={service} className="flex items-center justify-between p-3 bg-steam-blue-light rounded">
                   <div className="flex items-center space-x-3">
                     <div className={`w-2 h-2 rounded-full ${

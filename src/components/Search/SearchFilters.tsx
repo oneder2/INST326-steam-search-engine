@@ -41,13 +41,18 @@ export default function SearchFilters({
     value: SearchFiltersType[K]
   ) => {
     const newFilters = { ...filters };
-    
-    if (value === undefined || value === null || value === '') {
+
+    // Handle different types of empty values
+    if (value === undefined || value === null) {
+      delete newFilters[key];
+    } else if (typeof value === 'string' && value === '') {
+      delete newFilters[key];
+    } else if (Array.isArray(value) && value.length === 0) {
       delete newFilters[key];
     } else {
       newFilters[key] = value;
     }
-    
+
     onFiltersChange(newFilters);
   };
 

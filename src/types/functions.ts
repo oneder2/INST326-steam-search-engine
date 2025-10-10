@@ -32,10 +32,12 @@ export type FunctionComplexity = 'Low' | 'Medium' | 'High';
 /**
  * Function categories for organization
  */
-export type FunctionCategory = 
+export type FunctionCategory =
   | 'API Client'
+  | 'API Endpoint'
   | 'Search Algorithm'
   | 'Data Processing'
+  | 'Data Access'
   | 'Validation'
   | 'Utility'
   | 'UI Components'

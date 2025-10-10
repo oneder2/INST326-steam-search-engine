@@ -203,6 +203,8 @@ export interface GameDetailResponse extends GameInfo {
   developer?: string;
   /** Publisher name */
   publisher?: string;
+  /** Review status based on review stability */
+  review_status?: string;
 }
 
 // ============================================================================

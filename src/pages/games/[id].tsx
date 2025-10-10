@@ -10,7 +10,7 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
 import MainLayout from '@/components/Layout/MainLayout';
-import { GameDetailResponse } from '@/types/api';
+import { GameDetailResponse, CoopType } from '@/types/api';
 import { REVIEW_STATUS_CONFIG } from '@/constants/api';
 
 /**
@@ -59,7 +59,7 @@ export default function GameDetailPage() {
         description: 'A short description of this amazing game.',
         price: 29.99,
         genres: ['Action', 'Adventure', 'Indie'],
-        coop_type: 'Online',
+        coop_type: CoopType.ONLINE,
         deck_comp: true,
         ranking_metrics: {
           review_stability: 0.85,
@@ -154,7 +154,8 @@ export default function GameDetailPage() {
     );
   }
 
-  const reviewConfig = REVIEW_STATUS_CONFIG[game.review_status || 'Mixed'];
+  const reviewStatus = game.review_status || 'Mixed';
+  const reviewConfig = REVIEW_STATUS_CONFIG[reviewStatus as keyof typeof REVIEW_STATUS_CONFIG];
 
   return (
     <MainLayout

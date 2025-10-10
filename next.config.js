@@ -54,10 +54,9 @@ const nextConfig = {
     CUSTOM_KEY: process.env.CUSTOM_KEY,
   },
   
-  // Experimental features
+  // Experimental features (none currently needed for Next.js 14)
   experimental: {
-    // Enable app directory (Next.js 13+ feature)
-    appDir: true,
+    // Future experimental features can be added here
   },
   
   // Webpack configuration for custom module resolution

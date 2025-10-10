@@ -12,7 +12,7 @@ import MainLayout from '@/components/Layout/MainLayout';
 import SearchBox from '@/components/Search/SearchBox';
 import SearchFilters from '@/components/Search/SearchFilters';
 import SearchResults from '@/components/Search/SearchResults';
-import { SearchQuerySchema, SearchFilters as SearchFiltersType, GameResult } from '@/types/api';
+import { SearchQuerySchema, SearchFilters as SearchFiltersType, GameResult, ReviewStatus } from '@/types/api';
 import { SEARCH_LIMITS } from '@/constants/api';
 
 /**
@@ -61,9 +61,9 @@ export default function SearchPage() {
         urlFilters.coop_type = filterParams.coop_type as any;
       }
       if (filterParams.platform) {
-        urlFilters.platform = Array.isArray(filterParams.platform) 
-          ? filterParams.platform as string[]
-          : [filterParams.platform as string];
+        urlFilters.platform = Array.isArray(filterParams.platform)
+          ? filterParams.platform as any[]
+          : [filterParams.platform as any];
       }
       
       setFilters(urlFilters);
@@ -127,7 +127,7 @@ export default function SearchPage() {
           score: 0.95,
           price: 19.99,
           genres: ['Action', 'Indie'],
-          review_status: 'Very Positive',
+          review_status: ReviewStatus.VERY_POSITIVE,
           deck_compatible: true,
         },
         {
@@ -136,7 +136,7 @@ export default function SearchPage() {
           score: 0.87,
           price: 29.99,
           genres: ['Adventure', 'RPG'],
-          review_status: 'Positive',
+          review_status: ReviewStatus.POSITIVE,
           deck_compatible: false,
         },
       ];
