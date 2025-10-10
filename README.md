@@ -56,11 +56,7 @@ This project was developed as part of the **INST326 - Object-Oriented Programmin
 
 ```
 steam-searcher-engine/
-├── docs/                          # Project documentation
-│   ├── functions/                 # Function library documentation
-│   ├── 技术文档/                   # Technical documentation
-│   └── 软需求文档/                 # Requirements documentation
-├── src/                           # Source code
+├── src/                           # Frontend source code (Next.js)
 │   ├── components/                # React components
 │   │   ├── Layout/               # Layout components
 │   │   ├── Search/               # Search-related components
@@ -72,8 +68,26 @@ steam-searcher-engine/
 │   ├── hooks/                    # Custom React hooks
 │   ├── utils/                    # Utility functions
 │   └── styles/                   # Global styles and CSS
+├── steam-search-backend/          # Backend API service (FastAPI)
+│   ├── main.py                   # FastAPI application
+│   ├── requirements.txt          # Full backend dependencies
+│   ├── requirements-core.txt     # Core dependencies for deployment
+│   ├── .env.example             # Environment configuration
+│   └── README.md                 # Backend documentation
+├── steam-search-crawler/          # Data collection service
+│   ├── main.py                   # Crawler application
+│   ├── requirements.txt          # Crawler dependencies
+│   ├── .env.example             # Crawler configuration
+│   └── README.md                 # Crawler documentation
+├── docs/                          # Project documentation
+│   ├── functions/                # Function library documentation
+│   ├── 技术文档/                  # Technical documentation
+│   └── 软需求文档/                # Requirements documentation
 ├── public/                       # Static assets
-├── package.json                  # Dependencies and scripts
+├── render.yaml                   # Render.com deployment config
+├── Dockerfile.backend            # Backend Docker configuration
+├── Dockerfile.frontend           # Frontend Docker configuration
+├── package.json                  # Frontend dependencies and scripts
 ├── tsconfig.json                # TypeScript configuration
 ├── tailwind.config.js           # Tailwind CSS configuration
 ├── next.config.js               # Next.js configuration
@@ -147,15 +161,23 @@ steam-searcher-engine/
 ## 🏗️ Architecture
 
 ### System Architecture
-The Steam Game Search Engine follows a modern three-tier architecture:
+The Steam Game Search Engine follows a modern microservices architecture with separated concerns:
 
 ```
-Frontend (Next.js)  ←→  Backend (FastAPI)  ←→  Data Layer (SQLite + Indices)
+Frontend (Next.js)  ←→  Backend API (FastAPI)  ←→  Data Layer (SQLite + Indices)
+     │                        │                        ↑
+  React UI              Python Services           Data Crawler
+  TypeScript           Search Algorithms          (Steam API)
+  Tailwind CSS         API Endpoints                   │
      │                        │                        │
-  React UI              Python Services           Game Database
-  TypeScript           Search Algorithms          Faiss Index
-  Tailwind CSS         API Endpoints              BM25 Index
+  Deployed on           Deployed on              Runs Independently
+  Render.com           Render.com               (Data Collection)
 ```
+
+### Service Separation
+- **Frontend**: `/` - Next.js React application
+- **Backend API**: `/steam-search-backend/` - FastAPI service
+- **Data Crawler**: `/steam-search-crawler/` - Data collection service
 
 ### Frontend Architecture (Next.js)
 - **Pages**: Next.js pages handling routing and server-side rendering
@@ -245,14 +267,20 @@ The project is configured for deployment on Render.com with separate services fo
 #### Manual Deployment
 1. **Backend Service** (Python FastAPI):
    ```bash
-   # Build Command: pip install -r requirements.txt
-   # Start Command: uvicorn main:app --host 0.0.0.0 --port $PORT
+   # Build Command: pip install -r steam-search-backend/requirements-core.txt
+   # Start Command: cd steam-search-backend && uvicorn main:app --host 0.0.0.0 --port $PORT
    ```
 
 2. **Frontend Service** (Next.js):
    ```bash
    # Build Command: npm ci && npm run build
    # Start Command: npm start
+   ```
+
+3. **Data Crawler** (Independent Service):
+   ```bash
+   # Not deployed on Render - runs independently for data collection
+   # Can be run on local machine or separate server
    ```
 
 #### Environment Variables
@@ -275,13 +303,52 @@ CORS_ORIGINS=https://steam-search-frontend.onrender.com
 ```
 
 ### Local Development
-```bash
-# Frontend
-npm run dev                # Start Next.js development server
 
-# Backend (when available)
-uvicorn main:app --reload  # Start FastAPI development server
+#### Frontend Development
+```bash
+# Install dependencies
+npm install
+
+# Start Next.js development server
+npm run dev                # Runs on http://localhost:3000
 ```
+
+#### Backend API Development
+```bash
+# Navigate to backend directory
+cd steam-search-backend
+
+# Install dependencies
+pip install -r requirements-core.txt  # Core dependencies (recommended)
+# OR
+pip install -r requirements.txt       # Full dependencies (includes ML libraries)
+
+# Start FastAPI development server
+python main.py             # Runs on http://localhost:8000
+# OR
+uvicorn main:app --reload  # Alternative start command
+```
+
+#### Data Crawler Development
+```bash
+# Navigate to crawler directory
+cd steam-search-crawler
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Configure environment
+cp .env.example .env
+# Edit .env with your Steam API key
+
+# Initialize database
+python main.py --init-db
+
+# Run data collection
+python main.py --full-crawl
+```
+
+**Note**: Each service has its own requirements.txt file optimized for its specific needs.
 
 See [DEPLOYMENT.md](DEPLOYMENT.md) for detailed deployment instructions.
 

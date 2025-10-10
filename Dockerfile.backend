@@ -24,18 +24,18 @@ RUN groupadd --gid 1001 appuser \
     && useradd --uid 1001 --gid appuser --shell /bin/bash --create-home appuser
 
 # Copy requirements first for better caching
-COPY requirements.txt .
+COPY steam-search-backend/requirements-core.txt ./requirements-core.txt
 
 # Install Python dependencies
 RUN pip install --no-cache-dir --upgrade pip \
-    && pip install --no-cache-dir -r requirements.txt
+    && pip install --no-cache-dir -r requirements-core.txt
 
 # Create necessary directories
 RUN mkdir -p data logs \
     && chown -R appuser:appuser /app
 
-# Copy application code
-COPY . .
+# Copy backend application code
+COPY steam-search-backend/ ./
 
 # Set ownership of application files
 RUN chown -R appuser:appuser /app

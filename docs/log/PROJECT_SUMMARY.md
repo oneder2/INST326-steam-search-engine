@@ -13,6 +13,13 @@ This document summarizes the completed Steam Game Search Engine project, created
 - **Frontend**: Next.js TypeScript for UI and API integration
 - **Function Library**: Documents Python backend functions (not frontend functions)
 - **Deployment**: Render.com with separate frontend and backend services
+- **Service Separation**: Backend and crawler moved to dedicated directories
+
+### ✅ Project Restructuring
+- **Frontend**: Remains in project root for easy deployment
+- **Backend API**: Moved to `steam-search-backend/` directory
+- **Data Crawler**: Moved to `steam-search-crawler/` directory
+- **Independent Services**: Each service has its own dependencies and configuration
 
 ## 🎯 Project Objectives Achieved
 

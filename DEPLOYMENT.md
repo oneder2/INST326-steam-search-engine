@@ -40,8 +40,8 @@ This document provides comprehensive instructions for deploying the Steam Game S
 3. **Configure Service**:
    - **Name**: `steam-search-backend`
    - **Environment**: `Python`
-   - **Build Command**: `pip install -r requirements.txt`
-   - **Start Command**: `uvicorn main:app --host 0.0.0.0 --port $PORT`
+   - **Build Command**: `pip install -r steam-search-backend/requirements-core.txt`
+   - **Start Command**: `cd steam-search-backend && uvicorn main:app --host 0.0.0.0 --port $PORT`
    - **Plan**: Free (for development)
 
 4. **Environment Variables**:
@@ -58,6 +58,18 @@ This document provides comprehensive instructions for deploying the Steam Game S
    ```
 
 5. **Health Check Path**: `/api/v1/health`
+
+**Important Note**: The backend uses `steam-search-backend/requirements-core.txt` for production deployment to avoid dependency conflicts. This file contains only the essential packages needed to run the FastAPI backend. The full `steam-search-backend/requirements.txt` file includes development and ML dependencies that may have build issues in some environments.
+
+## 📁 Service Structure
+
+The project is organized into separate services:
+
+- **Frontend**: Next.js application in project root
+- **Backend API**: FastAPI service in `steam-search-backend/`
+- **Data Crawler**: Data collection service in `steam-search-crawler/` (not deployed on Render)
+
+Each service has its own dependencies and configuration files.
 
 ### Step 3: Deploy Frontend Service
 

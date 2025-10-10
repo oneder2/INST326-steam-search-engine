@@ -45,13 +45,13 @@ services:
         source: /api/*
         destination: https://steam-search-backend.onrender.com/api/*
     
-  # Backend - Python FastAPI Application  
+  # Backend - Python FastAPI Application
   - type: web
     name: steam-search-backend
     env: python
     plan: free
-    buildCommand: pip install -r requirements.txt
-    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    buildCommand: pip install -r steam-search-backend/requirements-core.txt
+    startCommand: cd steam-search-backend && uvicorn main:app --host 0.0.0.0 --port $PORT
     healthCheckPath: /api/v1/health
     envVars:
       - key: PYTHON_VERSION
