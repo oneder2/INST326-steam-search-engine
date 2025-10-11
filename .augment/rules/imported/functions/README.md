@@ -1,32 +1,16 @@
----
-type: "always_apply"
----
+# Python Backend Function Library Documentation
 
-# Function Library Documentation
-
-This directory contains comprehensive documentation for all functions used in the Steam Game Search Engine project. Each function is documented in markdown format with detailed descriptions, parameters, examples, and usage guidelines.
+This directory contains comprehensive documentation for all Python FastAPI backend functions used in the Steam Game Search Engine project. Each function is documented in markdown format with detailed descriptions, parameters, examples, and usage guidelines showcasing the backend implementation.
 
 ## Directory Structure
 
 ```
 docs/functions/
 ├── README.md                 # This file - overview and guidelines
-├── api-client/              # API client functions
-│   ├── search-functions.md  # Game search related functions
-│   ├── data-functions.md    # Data fetching functions
-│   └── utility-functions.md # API utility functions
-├── algorithms/              # Search and ranking algorithms
-│   ├── search-algorithms.md # BM25 and semantic search
-│   ├── ranking-algorithms.md # Fusion ranking functions
-│   └── validation.md        # Input validation functions
-├── components/              # React component functions
-│   ├── search-components.md # Search UI components
-│   ├── display-components.md # Game display components
-│   └── utility-components.md # Utility UI components
-└── utils/                   # Utility functions
-    ├── data-processing.md   # Data transformation functions
-    ├── formatting.md        # Text and number formatting
-    └── helpers.md           # General helper functions
+└── backend/                 # Python FastAPI backend functions
+    ├── api_endpoints.md     # FastAPI endpoint functions
+    ├── search_algorithms.md # BM25, Faiss, and fusion ranking
+    └── data_access.md       # Database and index loading functions
 ```
 
 ## Documentation Format
@@ -84,23 +68,17 @@ Any additional notes, warnings, or important information.
 
 ## Function Categories
 
-### API Client
-Functions that handle communication with the backend API, including request/response handling, error management, and data transformation.
+### API Endpoints
+FastAPI endpoint functions that handle HTTP requests, implement business logic, and return structured responses. Includes search endpoints, game detail endpoints, and health checks.
 
 ### Search Algorithms
-Core search functionality including BM25 keyword search, semantic search with embeddings, and fusion ranking algorithms.
+Core search functionality including BM25 keyword search, Faiss semantic search with embeddings, and fusion ranking algorithms that combine multiple relevance signals.
 
-### Data Processing
-Functions for transforming, filtering, and manipulating game data, search results, and user input.
+### Data Access
+Functions for database operations, index loading, and data retrieval. Includes SQLite database access, Faiss index management, and BM25 index operations.
 
-### Validation
-Input validation, sanitization, and security functions to ensure data integrity and prevent injection attacks.
-
-### UI Components
-React components and their associated functions for rendering the user interface, handling user interactions, and managing component state.
-
-### Utilities
-General-purpose helper functions for formatting, calculations, type checking, and other common operations.
+### Validation & Security
+Input validation, sanitization, and security functions to ensure data integrity and prevent injection attacks. Includes query validation and malicious pattern detection.
 
 ## Usage in Function Library Page
 
