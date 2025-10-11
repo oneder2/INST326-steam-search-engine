@@ -13,18 +13,43 @@ docs/functions/backend/
 │   ├── api_endpoints.md
 │   ├── search_algorithms.md
 │   └── data_access.md
-├── apply_fusion_ranking.md        # 融合排序算法
-├── get_game_by_id.md              # 按ID获取游戏
-├── get_game_detail.md             # 获取游戏详情
-├── get_games_by_ids.md            # 批量获取游戏
-├── get_search_suggestions.md      # 搜索建议
-├── health_check.md                # 健康检查
-├── load_bm25_index.md             # 加载BM25索引
-├── load_faiss_index.md            # 加载Faiss索引
-├── search_bm25_index.md           # BM25搜索
-├── search_faiss_index.md          # Faiss语义搜索
-├── search_games.md                # 主搜索端点
-└── validate_search_query.md       # 查询验证
+├── api-endpoints/                 # API端点函数
+│   ├── category.json
+│   ├── search_games.md
+│   ├── get_search_suggestions.md
+│   ├── get_game_detail.md
+│   └── health_check.md
+├── search-algorithms/             # 搜索算法函数
+│   ├── category.json
+│   ├── search_bm25_index.md
+│   ├── search_faiss_index.md
+│   ├── apply_fusion_ranking.md
+│   └── merge_search_results.md
+├── data-access/                   # 数据访问函数
+│   ├── category.json
+│   ├── get_game_by_id.md
+│   ├── get_games_by_ids.md
+│   ├── load_bm25_index.md
+│   ├── load_faiss_index.md
+│   └── search_games_by_title.md
+├── validation/                    # 验证函数
+│   ├── category.json
+│   ├── validate_search_query.md
+│   └── detect_malicious_patterns.md
+├── configuration/                 # 配置管理函数
+│   ├── category.json
+│   ├── get_settings.md
+│   └── validate_configuration.md
+├── utilities/                     # 工具函数
+│   ├── category.json
+│   ├── sanitize_input.md
+│   ├── tokenize_text.md
+│   ├── normalize_text.md
+│   └── log_security_event.md
+└── caching/                       # 缓存管理函数
+    ├── category.json
+    ├── cache_search_results.md
+    └── clear_search_cache.md
 ```
 
 ---
@@ -34,28 +59,55 @@ docs/functions/backend/
 ### API Endpoints（API 端点）- 4 个函数
 | 函数名 | 文件 | 复杂度 | 说明 |
 |--------|------|--------|------|
-| `search_games` | [search_games.md](search_games.md) | High | 主搜索端点 |
-| `get_search_suggestions` | [get_search_suggestions.md](get_search_suggestions.md) | Medium | 搜索建议 |
-| `get_game_detail` | [get_game_detail.md](get_game_detail.md) | Low | 游戏详情 |
-| `health_check` | [health_check.md](health_check.md) | Low | 健康检查 |
+| `search_games` | [api-endpoints/search_games.md](api-endpoints/search_games.md) | High | 主搜索端点 |
+| `get_search_suggestions` | [api-endpoints/get_search_suggestions.md](api-endpoints/get_search_suggestions.md) | Medium | 搜索建议 |
+| `get_game_detail` | [api-endpoints/get_game_detail.md](api-endpoints/get_game_detail.md) | Low | 游戏详情 |
+| `health_check` | [api-endpoints/health_check.md](api-endpoints/health_check.md) | Low | 健康检查 |
 
 ### Search Algorithms（搜索算法）- 4 个函数
 | 函数名 | 文件 | 复杂度 | 说明 |
 |--------|------|--------|------|
-| `search_bm25_index` | [search_bm25_index.md](search_bm25_index.md) | Medium | BM25关键词搜索 |
-| `search_faiss_index` | [search_faiss_index.md](search_faiss_index.md) | High | Faiss语义搜索 |
-| `apply_fusion_ranking` | [apply_fusion_ranking.md](apply_fusion_ranking.md) | High | 融合排序算法 |
-| `validate_search_query` | [validate_search_query.md](validate_search_query.md) | Medium | 查询验证 |
+| `search_bm25_index` | [search-algorithms/search_bm25_index.md](search-algorithms/search_bm25_index.md) | Medium | BM25关键词搜索 |
+| `search_faiss_index` | [search-algorithms/search_faiss_index.md](search-algorithms/search_faiss_index.md) | High | Faiss语义搜索 |
+| `apply_fusion_ranking` | [search-algorithms/apply_fusion_ranking.md](search-algorithms/apply_fusion_ranking.md) | High | 融合排序算法 |
+| `merge_search_results` | [search-algorithms/merge_search_results.md](search-algorithms/merge_search_results.md) | Medium | 搜索结果合并 |
 
-### Data Access（数据访问）- 4 个函数
+### Data Access（数据访问）- 5 个函数
 | 函数名 | 文件 | 复杂度 | 说明 |
 |--------|------|--------|------|
-| `get_game_by_id` | [get_game_by_id.md](get_game_by_id.md) | Low | 按ID获取游戏 |
-| `get_games_by_ids` | [get_games_by_ids.md](get_games_by_ids.md) | Medium | 批量获取游戏 |
-| `load_bm25_index` | [load_bm25_index.md](load_bm25_index.md) | Medium | 加载BM25索引 |
-| `load_faiss_index` | [load_faiss_index.md](load_faiss_index.md) | High | 加载Faiss索引 |
+| `get_game_by_id` | [data-access/get_game_by_id.md](data-access/get_game_by_id.md) | Low | 按ID获取游戏 |
+| `get_games_by_ids` | [data-access/get_games_by_ids.md](data-access/get_games_by_ids.md) | Medium | 批量获取游戏 |
+| `load_bm25_index` | [data-access/load_bm25_index.md](data-access/load_bm25_index.md) | Medium | 加载BM25索引 |
+| `load_faiss_index` | [data-access/load_faiss_index.md](data-access/load_faiss_index.md) | High | 加载Faiss索引 |
+| `search_games_by_title` | [data-access/search_games_by_title.md](data-access/search_games_by_title.md) | Medium | 按标题搜索游戏 |
 
-**总计**: 12 个函数
+### Validation（验证）- 2 个函数
+| 函数名 | 文件 | 复杂度 | 说明 |
+|--------|------|--------|------|
+| `validate_search_query` | [validation/validate_search_query.md](validation/validate_search_query.md) | Medium | 查询验证 |
+| `detect_malicious_patterns` | [validation/detect_malicious_patterns.md](validation/detect_malicious_patterns.md) | Medium | 恶意模式检测 |
+
+### Configuration（配置管理）- 2 个函数
+| 函数名 | 文件 | 复杂度 | 说明 |
+|--------|------|--------|------|
+| `get_settings` | [configuration/get_settings.md](configuration/get_settings.md) | Medium | 获取应用设置 |
+| `validate_configuration` | [configuration/validate_configuration.md](configuration/validate_configuration.md) | Medium | 配置验证 |
+
+### Utilities（工具函数）- 4 个函数
+| 函数名 | 文件 | 复杂度 | 说明 |
+|--------|------|--------|------|
+| `sanitize_input` | [utilities/sanitize_input.md](utilities/sanitize_input.md) | Low | 输入清理 |
+| `tokenize_text` | [utilities/tokenize_text.md](utilities/tokenize_text.md) | Medium | 文本分词 |
+| `normalize_text` | [utilities/normalize_text.md](utilities/normalize_text.md) | Low | 文本标准化 |
+| `log_security_event` | [utilities/log_security_event.md](utilities/log_security_event.md) | Low | 安全事件日志 |
+
+### Caching（缓存管理）- 2 个函数
+| 函数名 | 文件 | 复杂度 | 说明 |
+|--------|------|--------|------|
+| `cache_search_results` | [caching/cache_search_results.md](caching/cache_search_results.md) | Medium | 缓存搜索结果 |
+| `clear_search_cache` | [caching/clear_search_cache.md](caching/clear_search_cache.md) | Low | 清理搜索缓存 |
+
+**总计**: 23 个函数
 
 ---
 
@@ -168,13 +220,17 @@ backend/main.py                    docs/functions/backend/
 
 | 指标 | 数值 |
 |------|------|
-| 总函数数 | 12 |
+| 总函数数 | 23 |
 | API 端点 | 4 |
 | 搜索算法 | 4 |
-| 数据访问 | 4 |
-| 高复杂度 | 4 |
-| 中复杂度 | 5 |
-| 低复杂度 | 3 |
+| 数据访问 | 5 |
+| 验证 | 2 |
+| 配置管理 | 2 |
+| 工具函数 | 4 |
+| 缓存管理 | 2 |
+| 高复杂度 | 3 |
+| 中复杂度 | 12 |
+| 低复杂度 | 8 |
 
 ---
 
@@ -251,6 +307,34 @@ python3 scripts/split_functions.py
 
 ---
 
-**最后更新**: 2024-10-10
+**最后更新**: 2024-10-11
 **维护者**: INST326 开发团队
+
+---
+
+## 🆕 最新更新 (2024-10-11)
+
+### 新增函数分类
+- **Configuration（配置管理）**: 2个函数，用于应用配置和验证
+- **Utilities（工具函数）**: 4个函数，提供通用工具和安全功能
+- **Caching（缓存管理）**: 2个函数，实现搜索结果缓存和管理
+
+### 新增核心函数
+1. `merge_search_results` - 搜索结果合并算法
+2. `search_games_by_title` - 按标题搜索游戏（支持模糊匹配）
+3. `detect_malicious_patterns` - 恶意模式检测和安全防护
+4. `get_settings` - 应用配置管理
+5. `validate_configuration` - 配置验证
+6. `sanitize_input` - 输入清理和安全处理
+7. `tokenize_text` - 文本分词和预处理
+8. `normalize_text` - 文本标准化
+9. `log_security_event` - 安全事件日志记录
+10. `cache_search_results` - 搜索结果缓存
+11. `clear_search_cache` - 缓存清理和管理
+
+### 函数库扩展成果
+- **函数总数**: 从12个增加到23个（增长92%）
+- **分类数量**: 从4个增加到7个
+- **覆盖范围**: 完整覆盖API、搜索、数据、验证、配置、工具、缓存等所有核心功能
+- **实用性**: 所有函数都有完整的实现示例和使用说明
 

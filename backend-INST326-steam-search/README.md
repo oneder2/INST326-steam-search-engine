@@ -1,37 +1,60 @@
-# Steam Game Search Engine - Backend API
+# Steam Game Search Engine - Backend
 
-This is the Python FastAPI backend service for the Steam Game Search Engine. It provides RESTful API endpoints for game search, recommendations, and data retrieval.
+Python FastAPI后端服务，为Steam游戏搜索引擎项目提供智能搜索功能。
 
-## 🚀 Quick Start
+## 项目概述 / Overview
 
-### Prerequisites
-- Python 3.8+
-- pip package manager
+本后端提供智能游戏搜索功能，使用以下技术：
+- **BM25算法**: 基于关键词的搜索
+- **Faiss向量搜索**: 语义相似度搜索
+- **融合排序**: 结合两种搜索方法获得最优结果
 
-### Installation
+This backend provides intelligent game search capabilities using:
+- **BM25 Algorithm**: For keyword-based search
+- **Faiss Vector Search**: For semantic similarity search
+- **Fusion Ranking**: Combines both search methods for optimal results
 
-1. **Install Dependencies**:
+## 功能特性 / Features
+
+- 🔍 **混合搜索**: BM25 + 语义搜索与融合排序
+- 🎮 **游戏数据库**: 包含全面游戏元数据的SQLite数据库
+- 🚀 **快速API**: 高性能异步端点
+- 📊 **健康监控**: 内置健康检查和状态监控
+- 🔧 **可配置**: 基于环境变量的配置
+- 📚 **自动文档**: Swagger/OpenAPI文档位于 `/docs`
+
+## 快速开始 / Quick Start
+
+### 前置要求 / Prerequisites
+
+- Python 3.13+ (已更新依赖库以支持Python 3.13)
+- pip 或 conda
+
+### 安装步骤 / Installation
+
+1. **克隆仓库 / Clone the repository**
    ```bash
-   # For production deployment (minimal dependencies)
-   pip install -r requirements-core.txt
-   
-   # For full development (includes ML libraries)
+   git clone <repository-url>
+   cd backend-INST326-steam-search
+   ```
+
+2. **安装依赖 / Install dependencies**
+   ```bash
    pip install -r requirements.txt
    ```
 
-2. **Run the Server**:
+3. **设置环境 / Set up environment**
    ```bash
-   # Development server
-   python main.py
-   
-   # Or using uvicorn directly
-   uvicorn main:app --reload --host 0.0.0.0 --port 8000
+   cp .env.example .env
+   # 编辑 .env 文件配置你的设置 / Edit .env with your configuration
    ```
 
-3. **Access the API**:
-   - **API Documentation**: http://localhost:8000/docs
-   - **Health Check**: http://localhost:8000/api/v1/health
-   - **Root Endpoint**: http://localhost:8000/
+4. **运行服务器 / Run the server**
+   ```bash
+   python main.py
+   ```
+
+API将在 `http://localhost:8000` 可用
 
 ## 📋 API Endpoints
 
@@ -69,42 +92,37 @@ GET /api/v1/search/suggest?prefix=rogue
 GET /api/v1/health
 ```
 
-## 🏗️ Architecture
+## 架构 / Architecture
 
-### Current Implementation
-- **Framework**: FastAPI with Pydantic models
-- **Data**: Mock data for deployment testing
-- **CORS**: Configured for frontend communication
-- **Health Monitoring**: Built-in health checks
+### 核心组件 / Core Components
 
-### Planned Features
-- **Database**: SQLite for game metadata storage
-- **Search**: BM25 keyword search implementation
-- **ML**: Faiss vector search for semantic similarity
-- **Ranking**: Fusion algorithm combining multiple signals
+1. **FastAPI应用** (`main.py`)
+   - API端点和请求处理
+   - 中间件配置
+   - 错误处理
 
-## 🔧 Configuration
+2. **搜索算法** (`search_algorithms.py`)
+   - BM25关键词搜索实现
+   - Faiss语义搜索与嵌入
+   - 融合排序算法
 
-### Environment Variables
-```env
-# Server Configuration
-HOST=0.0.0.0
-PORT=8000
-ENVIRONMENT=development
+3. **数据库层** (`database.py`)
+   - SQLite数据库操作
+   - 游戏数据模型和查询
+   - 连接管理
 
-# CORS Configuration
-CORS_ORIGINS=http://localhost:3000,https://steam-search-frontend.onrender.com
+4. **配置管理** (`config.py`)
+   - 环境变量管理
+   - 设置验证
+   - 功能开关
 
-# Database Configuration (when implemented)
-DATABASE_URL=sqlite:///data/games_data.db
-FAISS_INDEX_PATH=data/game_embeddings.faiss
-BM25_INDEX_PATH=data/bm25_index.pkl
+### 搜索流程 / Search Flow
 
-# API Configuration
-API_RATE_LIMIT=100
-CACHE_TTL=3600
-LOG_LEVEL=INFO
-```
+1. **查询验证**: 输入清理和验证
+2. **并行搜索**: BM25和Faiss搜索并发运行
+3. **融合排序**: 使用加权评分合并结果
+4. **过滤**: 应用用户指定的过滤器
+5. **分页**: 返回分页结果
 
 ## 🧪 Testing
 
@@ -122,85 +140,138 @@ curl -X POST http://localhost:8000/api/v1/search/games \
 curl http://localhost:8000/api/v1/games/1
 ```
 
-### Automated Testing (when implemented)
+## 最新更新 / Latest Updates
+
+### 2024-10-11 - Python 3.13兼容性更新
+
+✅ **依赖库版本更新**:
+- `faiss-cpu`: 1.8.0 → 1.12.0 (支持Python 3.13)
+- `fastapi`: 0.104.1 → 0.118.3 (支持Python 3.13)
+- `pydantic`: 2.5.0 → 2.12.0 (支持Python 3.13)
+- `numpy`: 1.24.3 → 2.3.3 (支持Python 3.13)
+- `scikit-learn`: 1.3.2 → 1.7.2 (支持Python 3.13)
+- `sentence-transformers`: 2.2.2 → 5.1.1 (最新版本)
+
+✅ **核心功能实现**:
+- 完整的搜索算法模块（BM25 + Faiss + 融合排序）
+- 数据库访问层与异步操作
+- 配置管理系统
+- 健康检查和监控
+- API端点完整实现
+- 错误处理和日志记录
+
+✅ **开发工具**:
+- API测试脚本 (`test_api.py`)
+- 环境变量配置模板
+- 详细的中文和英文注释
+
+### 部署 / Deployment
+
+#### 本地开发 / Local Development
+
 ```bash
-pytest tests/
-pytest --cov=. tests/
+# 安装依赖 / Install dependencies
+pip install -r requirements.txt
+
+# 使用自动重载运行 / Run with auto-reload
+uvicorn main:app --reload --host 0.0.0.0 --port 8000
 ```
 
-## 📦 Dependencies
+#### 生产部署 / Production Deployment
 
-### Core Dependencies (requirements-core.txt)
-- **fastapi**: Web framework
-- **uvicorn**: ASGI server
-- **pydantic**: Data validation
-- **httpx**: HTTP client
-- **requests**: HTTP library
-- **python-multipart**: Form data support
-- **python-dotenv**: Environment variables
-- **python-dateutil**: Date utilities
+```bash
+# 安装生产依赖 / Install production dependencies
+pip install -r requirements.txt
 
-### Full Dependencies (requirements.txt)
-Includes additional libraries for:
-- Machine learning (faiss-cpu, sentence-transformers)
-- Data processing (pandas, numpy, scikit-learn)
-- Security (python-jose)
-- Monitoring (structlog, sentry-sdk)
-- Development tools (pytest, black, flake8)
-
-## 🚀 Deployment
-
-### Render.com Deployment
-This backend is configured for deployment on Render.com:
-
-```yaml
-# render.yaml (in project root)
-services:
-  - type: web
-    name: steam-search-backend
-    env: python
-    buildCommand: pip install -r steam-search-backend/requirements-core.txt
-    startCommand: cd steam-search-backend && uvicorn main:app --host 0.0.0.0 --port $PORT
+# 使用Gunicorn运行（推荐）/ Run with Gunicorn (recommended)
+gunicorn main:app -w 4 -k uvicorn.workers.UvicornWorker --bind 0.0.0.0:8000
 ```
 
-### Docker Deployment
-```dockerfile
-FROM python:3.11-slim
-WORKDIR /app
-COPY requirements-core.txt .
-RUN pip install -r requirements-core.txt
-COPY . .
-EXPOSE 8000
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+#### Render部署 / Render Deployment
+
+项目已配置为在Render平台部署，支持Python 3.13环境。
+
+## 故障排除 / Troubleshooting
+
+### 常见问题 / Common Issues
+
+1. **导入错误**: 确保所有依赖都已安装
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+2. **数据库未找到**: 检查 `.env` 中的 `DATABASE_URL`
+   ```bash
+   # 验证数据库文件存在 / Verify database file exists
+   ls -la data/games_data.db
+   ```
+
+3. **搜索索引缺失**: 如果缺失，索引将自动创建
+   ```bash
+   # 检查索引文件 / Check index files
+   ls -la data/*.faiss data/*.pkl
+   ```
+
+4. **端口已被使用**: 在 `.env` 中更改端口或终止现有进程
+   ```bash
+   # 查找使用端口8000的进程 / Find process using port 8000
+   lsof -i :8000
+   ```
+
+### 调试模式 / Debug Mode
+
+启用调试模式以获取详细错误信息：
+
+```bash
+# 在 .env 文件中 / In .env file
+DEBUG=true
+LOG_LEVEL=DEBUG
 ```
 
-## 📚 Documentation
+## 贡献 / Contributing
 
-- **API Documentation**: Available at `/docs` when server is running
-- **Function Library**: See `../docs/functions/backend/` for detailed function documentation
-- **API Contract**: See `../docs/技术文档/API 契约与后端实现文档.md`
+1. Fork仓库
+2. 创建功能分支
+3. 进行更改
+4. 为新功能添加测试
+5. 运行测试套件
+6. 提交拉取请求
 
-## 🔗 Related Services
+## 许可证 / License
 
-- **Frontend**: Next.js application in project root
-- **Data Crawler**: Steam data collection service in `../steam-search-crawler/`
-- **Documentation**: Comprehensive docs in `../docs/`
+本项目是INST326课程作业的一部分。
 
-## 🤝 Development
+## 支持 / Support
 
-### Code Style
-- **Formatter**: Black
-- **Linter**: Flake8
-- **Import Sorting**: isort
-- **Type Checking**: Pydantic models
+如有问题或疑问：
+1. 查看故障排除部分
+2. 查看 `/docs` 的API文档
+3. 通过课程渠道联系开发团队
 
-### Adding New Features
-1. Update Pydantic models in `main.py`
-2. Implement new endpoints
-3. Add tests in `tests/` directory
-4. Update API documentation
-5. Update function library documentation
+---
 
-## 📄 License
+## 🆕 最新更新 (2024-10-11)
 
-This project is part of the INST326 group assignment.
+### 函数库扩展完成
+- ✅ **新增 `utilities.py` 模块**: 包含工具函数和安全功能
+- ✅ **实现输入清理**: `sanitize_input()` 函数防止XSS和注入攻击
+- ✅ **恶意模式检测**: `detect_malicious_patterns()` 函数检测安全威胁
+- ✅ **文本处理功能**: `normalize_text()` 和 `tokenize_text()` 函数
+- ✅ **安全事件日志**: `log_security_event()` 函数记录安全事件
+- ✅ **搜索结果合并**: `merge_search_results()` 函数合并多算法结果
+- ✅ **按标题搜索**: `search_games_by_title()` 函数支持模糊匹配
+- ✅ **前后端同步**: 与前端function-library文档完全同步
+
+### 函数库统计
+- **总函数数**: 23个（满足作业要求的15+个函数）
+- **分类数量**: 7个（API端点、搜索算法、数据访问、验证、配置、工具、缓存）
+- **实现状态**: 所有核心函数都有完整的代码实现和文档
+- **测试覆盖**: 所有API端点都通过了集成测试
+
+### 技术亮点
+- **模块化架构**: 清晰分离不同功能模块
+- **安全防护**: 全面的输入验证和恶意模式检测
+- **异步支持**: 全面使用async/await提高性能
+- **错误处理**: 完善的异常处理和日志记录
+- **类型安全**: 使用Pydantic进行数据验证
+- **文档完善**: 中英文双语注释和详细文档
