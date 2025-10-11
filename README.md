@@ -13,6 +13,24 @@ The Steam Game Search Engine addresses the limitations of Steam's current search
 
 This project was developed as part of the **INST326 - Object-Oriented Programming** course at the University of Maryland.
 
+## 🏗️ Monorepo Architecture
+
+This project follows a **monorepo structure** with separate frontend and backend services:
+
+```
+INST326-steam-searcher-engine/
+├── frontend-INST326-steam-search/    # Next.js React frontend
+├── backend-INST326-steam-search/     # Python FastAPI backend
+├── docs/                               # Shared documentation
+├── README.md                           # This file (main project documentation)
+└── deployment/                         # Shared deployment configurations
+```
+
+### Service Separation
+- **Frontend**: `frontend-INST326-steam-search/` - Next.js React application
+- **Backend**: `backend-INST326-steam-search/` - Python FastAPI service
+- **Documentation**: `docs/` - Shared project documentation
+
 ## 🚀 Features
 
 ### Core Functionality
@@ -52,68 +70,65 @@ This project was developed as part of the **INST326 - Object-Oriented Programmin
 - **Jest** - Unit testing framework
 - **TypeScript Compiler** - Type checking
 
-## 📁 Project Structure
+## 📁 Monorepo Project Structure
 
 ```
-steam-searcher-engine/
-├── src/                           # Frontend source code (Next.js)
-│   ├── components/                # React components
-│   │   ├── Layout/               # Layout components
-│   │   ├── Search/               # Search-related components
-│   │   └── FunctionLibrary/      # Function documentation components
-│   ├── pages/                    # Next.js pages and API routes
-│   │   ├── api/                  # Next.js API routes
-│   │   │   └── functions.ts     # Function library API endpoint (NEW)
-│   │   ├── function-library.tsx  # Function library page
-│   │   └── ...                   # Other pages
-│   ├── services/                 # API services and clients
-│   ├── types/                    # TypeScript type definitions
-│   ├── constants/                # Application constants
-│   ├── hooks/                    # Custom React hooks
-│   ├── utils/                    # Utility functions
-│   │   └── markdownParser.ts    # Markdown parser utility (NEW)
-│   └── styles/                   # Global styles and CSS
-├── steam-search-backend/          # Backend API service (FastAPI)
-│   ├── main.py                   # FastAPI application
-│   ├── requirements.txt          # Full backend dependencies
-│   ├── requirements-core.txt     # Core dependencies for deployment
-│   ├── .env.example             # Environment configuration
-│   └── README.md                 # Backend documentation
-├── steam-search-crawler/          # Data collection service
-│   ├── main.py                   # Crawler application
-│   ├── requirements.txt          # Crawler dependencies
-│   ├── .env.example             # Crawler configuration
-│   └── README.md                 # Crawler documentation
-├── docs/                          # Project documentation
-│   ├── functions/                # Function library documentation (markdown)
-│   │   └── backend/              # Python backend function docs (one file per function)
-│   │       ├── old_format/       # Backup of old multi-function files
-│   │       ├── search_games.md   # Individual function documentation
-│   │       ├── apply_fusion_ranking.md
-│   │       ├── validate_search_query.md
-│   │       └── ... (12 total)    # Each function in its own file
-│   ├── 技术文档/                  # Technical documentation
-│   └── 软需求文档/                # Requirements documentation
-├── test/                          # Test files (NEW)
-│   ├── README.md                 # Testing guide
-│   ├── markdownParser.test.ts   # Markdown parser tests
-│   └── functionLibrary.integration.test.tsx # Integration tests
-├── public/                       # Static assets
-├── render.yaml                   # Render.com deployment config
-├── Dockerfile.backend            # Backend Docker configuration
-├── Dockerfile.frontend           # Frontend Docker configuration
-├── package.json                  # Frontend dependencies and scripts
-├── tsconfig.json                # TypeScript configuration
-├── tailwind.config.js           # Tailwind CSS configuration
-├── next.config.js               # Next.js configuration
-└── README.md                    # This file
+INST326-steam-searcher-engine/     # Project root (monorepo)
+├── frontend-INST326-steam-search/  # Frontend service directory
+│   ├── src/                      # Frontend source code (Next.js)
+│   │   ├── components/           # React components
+│   │   │   ├── Layout/          # Layout components
+│   │   │   ├── Search/          # Search-related components
+│   │   │   └── FunctionLibrary/ # Function documentation components
+│   │   ├── pages/               # Next.js pages and API routes
+│   │   │   ├── api/             # Next.js API routes
+│   │   │   │   └── functions.ts # Function library API endpoint
+│   │   │   ├── function-library.tsx # Function library page
+│   │   │   └── ...              # Other pages
+│   │   ├── services/            # API services and clients
+│   │   ├── types/               # TypeScript type definitions
+│   │   ├── constants/           # Application constants
+│   │   ├── hooks/               # Custom React hooks
+│   │   ├── utils/               # Utility functions
+│   │   │   └── markdownParser.ts # Markdown parser utility
+│   │   └── styles/              # Global styles and CSS
+│   ├── test/                    # Frontend test files
+│   │   ├── README.md            # Testing guide
+│   │   ├── markdownParser.test.ts # Markdown parser tests
+│   │   └── functionLibrary.integration.test.tsx # Integration tests
+│   ├── docs/                    # Frontend-specific documentation
+│   ├── public/                  # Static assets
+│   ├── package.json             # Frontend dependencies and scripts
+│   ├── tsconfig.json            # TypeScript configuration
+│   ├── tailwind.config.js       # Tailwind CSS configuration
+│   ├── next.config.js           # Next.js configuration
+│   ├── render.yaml              # Render.com deployment config
+│   ├── DEVELOPMENT.md           # Frontend development guide
+│   └── DEPLOYMENT.md            # Frontend deployment guide
+├── backend-INST326-steam-search/   # Backend service directory
+│   ├── main.py                  # FastAPI application
+│   ├── requirements.txt         # Full backend dependencies
+│   ├── requirements-core.txt    # Core dependencies for deployment
+│   └── README.md                # Backend documentation
+├── docs/                        # Shared project documentation
+│   ├── functions/               # Function library documentation (markdown)
+│   │   └── backend/             # Python backend function docs (one file per function)
+│   │       ├── api-endpoints/   # API endpoint functions
+│   │       ├── search-algorithms/ # Search & ranking algorithms
+│   │       ├── data-access/     # Database operations
+│   │       └── validation/      # Security & validation
+│   ├── tech-doc/                # Technical documentation
+│   ├── soft-requirement-doc/    # Requirements documentation
+│   └── maintain-doc/            # Maintenance documentation
+└── README.md                    # This file (main project documentation)
 ```
 
 ## 🚀 Getting Started
 
 ### Prerequisites
 
-- **Node.js** 18.0.0 or higher
+- **Node.js** 18.0.0 or higher (for frontend)
+- **Python** 3.8+ (for backend)
 - **npm** 8.0.0 or higher
 - **Git** for version control
 
@@ -125,27 +140,48 @@ steam-searcher-engine/
    cd INST326-steam-searcher-engine
    ```
 
-2. **Install dependencies**
+2. **Frontend Setup**
    ```bash
+   cd frontend-INST326-steam-search
    npm install
-   ```
 
-3. **Set up environment variables**
-   ```bash
+   # Set up environment variables
    cp .env.local.example .env.local
    # Edit .env.local with your configuration
    ```
 
-4. **Start the development server**
+3. **Backend Setup**
    ```bash
-   npm run dev
+   cd ../backend-INST326-steam-search
+
+   # Install dependencies (choose one)
+   pip install -r requirements-core.txt  # Minimal for deployment
+   # OR
+   pip install -r requirements.txt       # Full development setup
    ```
 
-5. **Open your browser**
-   Navigate to [http://localhost:3000](http://localhost:3000)
+4. **Start Development Servers**
+
+   **Frontend (Terminal 1):**
+   ```bash
+   cd frontend-INST326-steam-search
+   npm run dev                          # Runs on http://localhost:3000
+   ```
+
+   **Backend (Terminal 2):**
+   ```bash
+   cd backend-INST326-steam-search
+   python main.py                       # Runs on http://localhost:8000
+   ```
+
+5. **Access the Application**
+   - **Frontend**: [http://localhost:3000](http://localhost:3000)
+   - **Backend API**: [http://localhost:8000/docs](http://localhost:8000/docs)
+   - **Health Check**: [http://localhost:8000/api/v1/health](http://localhost:8000/api/v1/health)
 
 ### Available Scripts
 
+**Frontend Scripts** (run in `frontend-INST326-steam-search/`):
 - `npm run dev` - Start development server
 - `npm run build` - Build for production
 - `npm run start` - Start production server
@@ -153,6 +189,10 @@ steam-searcher-engine/
 - `npm run type-check` - Run TypeScript type checking
 - `npm test` - Run tests
 - `npm run test:watch` - Run tests in watch mode
+
+**Backend Scripts** (run in `backend-INST326-steam-search/`):
+- `python main.py` - Start development server
+- `uvicorn main:app --reload` - Alternative start command
 
 ## 📖 Usage
 
@@ -176,23 +216,24 @@ steam-searcher-engine/
 ## 🏗️ Architecture
 
 ### System Architecture
-The Steam Game Search Engine follows a modern microservices architecture with separated concerns:
+The Steam Game Search Engine follows a **monorepo microservices architecture** with clear service separation:
 
 ```
 Frontend (Next.js)  ←→  Backend API (FastAPI)  ←→  Data Layer (SQLite + Indices)
      │                        │                        ↑
-  React UI              Python Services           Data Crawler
-  TypeScript           Search Algorithms          (Steam API)
+  React UI              Python Services           Data Collection
+  TypeScript           Search Algorithms          (Future: Steam API)
   Tailwind CSS         API Endpoints                   │
      │                        │                        │
   Deployed on           Deployed on              Runs Independently
-  Render.com           Render.com               (Data Collection)
+  Render.com           Render.com               (Not yet implemented)
 ```
 
-### Service Separation
-- **Frontend**: `/` - Next.js React application
-- **Backend API**: `/steam-search-backend/` - FastAPI service
-- **Data Crawler**: `/steam-search-crawler/` - Data collection service
+### Monorepo Service Separation
+- **Frontend**: `frontend-INST326-steam-search/` - Next.js React application
+- **Backend API**: `backend-INST326-steam-search/` - FastAPI service
+- **Shared Documentation**: `docs/` - Project-wide documentation
+- **Deployment**: Each service has independent deployment configuration
 
 ### Frontend Architecture (Next.js)
 - **Pages**: Next.js pages handling routing and server-side rendering
@@ -437,29 +478,35 @@ The CI pipeline includes:
 
 ### Render.com Deployment
 
-The project is configured for deployment on Render.com with separate services for frontend and backend:
+The monorepo is configured for deployment on Render.com with separate services for frontend and backend:
 
 #### Quick Deploy
 [![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/oneder2/INST326-steam-searcher-engine)
 
 #### Manual Deployment
+
+**Important**: Each service deploys from its respective directory in the monorepo.
+
 1. **Backend Service** (Python FastAPI):
    ```bash
-   # Build Command: pip install -r steam-search-backend/requirements-core.txt
-   # Start Command: cd steam-search-backend && uvicorn main:app --host 0.0.0.0 --port $PORT
+   # Repository: https://github.com/oneder2/INST326-steam-searcher-engine
+   # Root Directory: backend-INST326-steam-search
+   # Build Command: pip install -r requirements-core.txt
+   # Start Command: uvicorn main:app --host 0.0.0.0 --port $PORT
    ```
 
 2. **Frontend Service** (Next.js):
    ```bash
+   # Repository: https://github.com/oneder2/INST326-steam-searcher-engine
+   # Root Directory: frontend-INST326-steam-search
    # Build Command: npm ci && npm run build
    # Start Command: npm start
    ```
 
-3. **Data Crawler** (Independent Service):
-   ```bash
-   # Not deployed on Render - runs independently for data collection
-   # Can be run on local machine or separate server
-   ```
+3. **Deployment Configuration**:
+   - Each service has its own `render.yaml` in its directory
+   - Shared documentation in project root `docs/`
+   - Independent scaling and configuration per service
 
 #### Environment Variables
 
@@ -484,6 +531,9 @@ CORS_ORIGINS=https://steam-search-frontend.onrender.com
 
 #### Frontend Development
 ```bash
+# Navigate to frontend directory
+cd frontend-INST326-steam-search
+
 # Install dependencies
 npm install
 
@@ -494,7 +544,7 @@ npm run dev                # Runs on http://localhost:3000
 #### Backend API Development
 ```bash
 # Navigate to backend directory
-cd steam-search-backend
+cd backend-INST326-steam-search
 
 # Install dependencies
 pip install -r requirements-core.txt  # Core dependencies (recommended)
@@ -507,28 +557,17 @@ python main.py             # Runs on http://localhost:8000
 uvicorn main:app --reload  # Alternative start command
 ```
 
-#### Data Crawler Development
-```bash
-# Navigate to crawler directory
-cd steam-search-crawler
+#### Development Workflow
+1. **Start both services** in separate terminals
+2. **Frontend** connects to backend via `NEXT_PUBLIC_API_BASE_URL`
+3. **Hot reload** enabled for both services during development
+4. **API documentation** available at `http://localhost:8000/docs`
 
-# Install dependencies
-pip install -r requirements.txt
+**Note**: Each service has its own dependencies and configuration optimized for its specific needs.
 
-# Configure environment
-cp .env.example .env
-# Edit .env with your Steam API key
-
-# Initialize database
-python main.py --init-db
-
-# Run data collection
-python main.py --full-crawl
-```
-
-**Note**: Each service has its own requirements.txt file optimized for its specific needs.
-
-See [DEPLOYMENT.md](DEPLOYMENT.md) for detailed deployment instructions.
+See individual service documentation:
+- Frontend: `frontend-INST326-steam-search/DEPLOYMENT.md`
+- Backend: `backend-INST326-steam-search/README.md`
 
 ## 📋 FastAPI Backend Documentation
 
@@ -610,13 +649,24 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 🔗 Links
 
-- [Live Demo](https://steam-search-frontend.onrender.com) (Render Deployment)
+### Live Services
+- [Live Demo](https://steam-search-frontend.onrender.com) (Frontend Deployment)
 - [Backend API](https://steam-search-backend.onrender.com) (FastAPI Backend)
+- [API Documentation](https://steam-search-backend.onrender.com/docs) (Interactive API Docs)
+
+### Local Development
+- frontend(http://localhost:3000) (Next.js Development Server)
+- [Backend API](http://localhost:8000/docs) (FastAPI Documentation)
 - [Function Library](http://localhost:3000/function-library) (Python Backend Functions)
-- [API Status](http://localhost:3000/api-status) (Backend Health Monitoring)
-- [Technical Documentation](docs/技术文档/) (Architecture & API Contract)
-- [Requirements Documentation](docs/软需求文档/) (PRD & SRS)
-- [Deployment Guide](DEPLOYMENT.md) (Render.com Instructions)
+- [Health Check](http://localhost:8000/api/v1/health) (Backend Health Monitoring)
+
+### Documentation
+- [Technical Documentation](docs/tech-doc/) (Architecture & API Contract)
+- [Requirements Documentation](docs/soft-requirement-doc/) (PRD & SRS)
+- [Maintenance Documentation](docs/maintain-doc/) (Project Maintenance)
+- [Frontend Deployment Guide](frontend-INST326-steam-search/DEPLOYMENT.md) (Render.com Instructions)
+- [Frontend Development Guide](frontend-INST326-steam-search/DEVELOPMENT.md) (Development Setup)
+- [Backend Documentation](backend-INST326-steam-search/README.md) (Backend API Guide)
 
 ## 📞 Support
 

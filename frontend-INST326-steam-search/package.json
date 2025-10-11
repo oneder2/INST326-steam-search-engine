@@ -1,7 +1,7 @@
 {
-  "name": "steam-searcher-engine",
+  "name": "steam-searcher-engine-frontend",
   "version": "1.0.0",
-  "description": "Steam Game Search Engine - A Next.js frontend for intelligent game discovery",
+  "description": "Steam Game Search Engine - Next.js frontend service for intelligent game discovery (Monorepo)",
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -11,7 +11,10 @@
     "type-check": "tsc --noEmit",
     "test": "jest",
     "test:watch": "jest --watch",
-    "test:coverage": "jest --coverage"
+    "test:coverage": "jest --coverage",
+    "monorepo:backend": "cd ../backend-INST326-steam-search && python main.py",
+    "monorepo:dev": "concurrently \"npm run dev\" \"npm run monorepo:backend\"",
+    "monorepo:install": "npm install && cd ../backend-INST326-steam-search && pip install -r requirements-core.txt"
   },
   "dependencies": {
     "next": "^14.0.0",
@@ -43,7 +46,8 @@
     "jest": "^29.0.0",
     "@testing-library/react": "^13.4.0",
     "@testing-library/jest-dom": "^6.0.0",
-    "jest-environment-jsdom": "^29.0.0"
+    "jest-environment-jsdom": "^29.0.0",
+    "concurrently": "^8.2.0"
   },
   "engines": {
     "node": ">=18.0.0",
@@ -56,8 +60,17 @@
     "engine",
     "nextjs",
     "react",
-    "typescript"
+    "typescript",
+    "monorepo",
+    "frontend",
+    "microservices"
   ],
   "author": "INST326 Team",
-  "license": "MIT"
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/oneder2/INST326-steam-searcher-engine.git",
+    "directory": "frontend-INST326-steam-search"
+  },
+  "homepage": "https://github.com/oneder2/INST326-steam-searcher-engine#readme"
 }

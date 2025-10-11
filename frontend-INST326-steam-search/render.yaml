@@ -1,0 +1,97 @@
+# Render.com deployment configuration for Steam Game Search Engine Frontend
+# This file defines the deployment settings for the frontend service only
+# Backend service has its own render.yaml in backend-INST326-steam-search/
+
+services:
+  # Frontend - Next.js Application
+  - type: web
+    name: steam-search-frontend
+    env: node
+    plan: free
+    # Note: Render will automatically use this directory as root when deploying
+    # Root Directory: frontend-INST326-steam-search
+    buildCommand: npm ci && npm run build
+    startCommand: npm start
+    healthCheckPath: /
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NEXT_PUBLIC_API_BASE_URL
+        value: https://steam-search-backend.onrender.com
+      - key: NEXT_PUBLIC_APP_URL
+        value: https://steam-search-frontend.onrender.com
+      - key: NEXT_PUBLIC_DEBUG
+        value: false
+    domains:
+      - steam-game-search.onrender.com
+    headers:
+      - path: /*
+        name: X-Frame-Options
+        value: DENY
+      - path: /*
+        name: X-Content-Type-Options
+        value: nosniff
+      - path: /*
+        name: Referrer-Policy
+        value: strict-origin-when-cross-origin
+      - path: /*
+        name: Permissions-Policy
+        value: camera=(), microphone=(), geolocation=()
+    routes:
+      - type: rewrite
+        source: /api/*
+        destination: https://steam-search-backend.onrender.com/api/*
+
+# Environment-specific configurations
+environments:
+  production:
+    services:
+      - name: steam-search-frontend
+        envVars:
+          - key: NEXT_PUBLIC_GA_ID
+            value: G-XXXXXXXXXX  # Replace with actual Google Analytics ID
+          - key: NEXT_PUBLIC_SENTRY_DSN
+            value: ""  # Add Sentry DSN for error tracking
+
+  staging:
+    services:
+      - name: steam-search-frontend
+        envVars:
+          - key: NEXT_PUBLIC_DEBUG
+            value: true
+
+# Health checks
+healthChecks:
+  frontend:
+    path: /
+    intervalSeconds: 30
+    timeoutSeconds: 10
+    unhealthyThresholdCount: 3
+    healthyThresholdCount: 2
+
+# Scaling settings
+scaling:
+  frontend:
+    minInstances: 1
+    maxInstances: 3
+    targetCPUPercent: 70
+
+# Performance optimizations
+performance:
+  compression: true
+  caching:
+    static:
+      maxAge: 31536000  # 1 year for static assets
+
+  cdn:
+    enabled: true
+    regions:
+      - us-east-1
+      - us-west-2
+      - eu-west-1
+
+# Custom domains and SSL
+domains:
+  - name: steamgamesearch.com
+    service: steam-search-frontend
+    ssl: true

@@ -1,0 +1,54 @@
+{
+  "name": "steam-searcher-engine-monorepo",
+  "version": "1.0.0",
+  "description": "Steam Game Search Engine - Monorepo with Next.js frontend and FastAPI backend",
+  "private": true,
+  "workspaces": [
+    "frontend-INST326-steam-search"
+  ],
+  "scripts": {
+    "dev": "npm run dev --workspace=frontend-INST326-steam-search",
+    "build": "npm run build --workspace=frontend-INST326-steam-search",
+    "start": "npm run start --workspace=frontend-INST326-steam-search",
+    "lint": "npm run lint --workspace=frontend-INST326-steam-search",
+    "test": "npm run test --workspace=frontend-INST326-steam-search",
+    "type-check": "npm run type-check --workspace=frontend-INST326-steam-search",
+    "frontend:dev": "npm run dev --workspace=frontend-INST326-steam-search",
+    "frontend:build": "npm run build --workspace=frontend-INST326-steam-search",
+    "frontend:start": "npm run start --workspace=frontend-INST326-steam-search",
+    "frontend:test": "npm run test --workspace=frontend-INST326-steam-search",
+    "backend:dev": "cd backend-INST326-steam-search && python main.py",
+    "backend:install": "cd backend-INST326-steam-search && pip install -r requirements-core.txt",
+    "install:all": "npm install && npm run backend:install",
+    "dev:all": "concurrently \"npm run frontend:dev\" \"npm run backend:dev\"",
+    "health:frontend": "curl -f http://localhost:3000 || echo 'Frontend not running'",
+    "health:backend": "curl -f http://localhost:8000/api/v1/health || echo 'Backend not running'",
+    "health:all": "npm run health:frontend && npm run health:backend"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.0"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
+  },
+  "keywords": [
+    "steam",
+    "game",
+    "search",
+    "engine",
+    "monorepo",
+    "nextjs",
+    "fastapi",
+    "react",
+    "python",
+    "typescript"
+  ],
+  "author": "INST326 Team",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/oneder2/INST326-steam-searcher-engine.git"
+  },
+  "homepage": "https://github.com/oneder2/INST326-steam-searcher-engine#readme"
+}
