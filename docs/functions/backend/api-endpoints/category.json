@@ -1,0 +1,38 @@
+{
+  "category": "API Endpoints",
+  "categoryId": "api-endpoints",
+  "displayName": "API Endpoints",
+  "icon": "🌐",
+  "order": 1,
+  "description": "FastAPI REST API endpoint functions that handle client requests and return responses",
+  "purpose": "These functions serve as the backend entry points, directly responding to frontend HTTP requests. Each endpoint is defined with FastAPI decorators and includes complete request validation, error handling, and response serialization.",
+  "characteristics": [
+    "Use FastAPI decorators (@app.get, @app.post)",
+    "Receive Pydantic models as request parameters",
+    "Return Pydantic models as responses",
+    "Include complete error handling and status codes",
+    "Support asynchronous operations (async/await)"
+  ],
+  "commonPatterns": [
+    "Parameter validation and sanitization",
+    "Call core business logic",
+    "Format response data",
+    "Log and monitor operations"
+  ],
+  "useCases": [
+    "Search games (search_games)",
+    "Get game details (get_game_detail)",
+    "Search suggestions (get_search_suggestions)",
+    "Health check (health_check)"
+  ],
+  "relatedCategories": ["search-algorithms", "data-access"],
+  "documentation": "API endpoints are the external interfaces of the system, following RESTful design principles with standard HTTP methods and status codes.",
+  "bestPractices": [
+    "Always validate input parameters",
+    "Use appropriate HTTP status codes",
+    "Provide clear error messages",
+    "Implement rate limiting and caching",
+    "Log all important operations"
+  ]
+}
+
