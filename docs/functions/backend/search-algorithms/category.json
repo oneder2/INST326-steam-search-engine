@@ -1,0 +1,66 @@
+{
+  "category": "Search Algorithms",
+  "categoryId": "search-algorithms",
+  "displayName": "Search Algorithms",
+  "icon": "🔍",
+  "order": 2,
+  "description": "Core search and ranking algorithms for game retrieval and relevance ranking",
+  "purpose": "These functions implement the system's core search capabilities, including BM25 keyword search, Faiss semantic search, fusion ranking algorithms, and query validation. They transform user queries into high-quality search results.",
+  "characteristics": [
+    "Implement complex search algorithms",
+    "Handle large-scale data indexing",
+    "Optimize search performance",
+    "Combine multiple ranking signals",
+    "Support asynchronous parallel searches"
+  ],
+  "commonPatterns": [
+    "Query preprocessing and tokenization",
+    "Index querying and scoring",
+    "Result merging and sorting",
+    "Performance optimization and caching"
+  ],
+  "algorithms": [
+    {
+      "name": "BM25",
+      "description": "Classic keyword search algorithm based on term frequency and document frequency",
+      "function": "search_bm25_index"
+    },
+    {
+      "name": "Faiss",
+      "description": "Vector similarity search for semantic understanding",
+      "function": "search_faiss_index"
+    },
+    {
+      "name": "Fusion Ranking",
+      "description": "Combines multiple search results with comprehensive scoring",
+      "function": "apply_fusion_ranking"
+    },
+    {
+      "name": "Query Validation",
+      "description": "Query validation and sanitization to prevent injection attacks",
+      "function": "validate_search_query"
+    }
+  ],
+  "keyFeatures": [
+    "Multi-source search fusion (BM25 + Faiss)",
+    "Intelligent ranking (quality + relevance)",
+    "High-performance indexing",
+    "Secure query processing"
+  ],
+  "relatedCategories": ["api-endpoints", "data-access"],
+  "documentation": "Search algorithms are the core competitive advantage of the system, providing high-quality search results by combining traditional keyword matching with modern semantic understanding.",
+  "performance": {
+    "bm25SearchTime": "< 50ms",
+    "faissSearchTime": "< 100ms",
+    "fusionRankingTime": "< 20ms",
+    "totalSearchTime": "< 200ms"
+  },
+  "bestPractices": [
+    "Preload indices into memory",
+    "Use asynchronous parallel searches",
+    "Implement result caching",
+    "Monitor search performance",
+    "Regularly update indices"
+  ]
+}
+

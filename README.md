@@ -61,12 +61,17 @@ steam-searcher-engine/
 │   │   ├── Layout/               # Layout components
 │   │   ├── Search/               # Search-related components
 │   │   └── FunctionLibrary/      # Function documentation components
-│   ├── pages/                    # Next.js pages
+│   ├── pages/                    # Next.js pages and API routes
+│   │   ├── api/                  # Next.js API routes
+│   │   │   └── functions.ts     # Function library API endpoint (NEW)
+│   │   ├── function-library.tsx  # Function library page
+│   │   └── ...                   # Other pages
 │   ├── services/                 # API services and clients
 │   ├── types/                    # TypeScript type definitions
 │   ├── constants/                # Application constants
 │   ├── hooks/                    # Custom React hooks
 │   ├── utils/                    # Utility functions
+│   │   └── markdownParser.ts    # Markdown parser utility (NEW)
 │   └── styles/                   # Global styles and CSS
 ├── steam-search-backend/          # Backend API service (FastAPI)
 │   ├── main.py                   # FastAPI application
@@ -80,9 +85,19 @@ steam-searcher-engine/
 │   ├── .env.example             # Crawler configuration
 │   └── README.md                 # Crawler documentation
 ├── docs/                          # Project documentation
-│   ├── functions/                # Function library documentation
+│   ├── functions/                # Function library documentation (markdown)
+│   │   └── backend/              # Python backend function docs (one file per function)
+│   │       ├── old_format/       # Backup of old multi-function files
+│   │       ├── search_games.md   # Individual function documentation
+│   │       ├── apply_fusion_ranking.md
+│   │       ├── validate_search_query.md
+│   │       └── ... (12 total)    # Each function in its own file
 │   ├── 技术文档/                  # Technical documentation
 │   └── 软需求文档/                # Requirements documentation
+├── test/                          # Test files (NEW)
+│   ├── README.md                 # Testing guide
+│   ├── markdownParser.test.ts   # Markdown parser tests
+│   └── functionLibrary.integration.test.tsx # Integration tests
 ├── public/                       # Static assets
 ├── render.yaml                   # Render.com deployment config
 ├── Dockerfile.backend            # Backend Docker configuration
@@ -209,7 +224,83 @@ Frontend (Next.js)  ←→  Backend API (FastAPI)  ←→  Data Layer (SQLite + 
 
 ## 📚 Python Backend Function Library
 
-The project includes a comprehensive function library documenting all Python FastAPI backend functions:
+The project includes a comprehensive function library documenting all Python FastAPI backend functions with **dynamic markdown-based documentation**:
+
+### 🆕 Dynamic Documentation System (Latest Feature)
+
+**Latest Update**: The function library now features a **categorized folder structure with navigation sidebar**!
+
+#### Key Features
+1. **Categorized Organization**: Functions organized into 4 categories with dedicated folders
+2. **Navigation Sidebar**: Left sidebar with icons, function counts, and quick navigation
+3. **Category Metadata**: Each category has a `category.json` file with detailed information
+4. **One File Per Function**: Each function in its own markdown file for maximum clarity
+5. **Responsive Design**: Mobile-friendly with collapsible navigation
+
+#### How It Works
+1. **Folder Structure**: Functions organized in `docs/functions/backend/<category>/<function>.md`
+2. **Auto-Parsing**: System reads nested directories and category metadata
+3. **API Integration**: `/api/functions` returns functions grouped by category
+4. **Frontend Display**: Interactive navigation sidebar with real-time filtering
+
+#### Advantages
+- ✅ **Easy Updates**: Modify function docs by editing markdown files (no code changes needed)
+- ✅ **Categorized Structure**: Functions organized by purpose in dedicated folders
+- ✅ **Visual Navigation**: Left sidebar with icons, counts, and quick filtering
+- ✅ **Category Metadata**: Rich information about each category's purpose and best practices
+- ✅ **Better Readability**: One file per function + folder organization
+- ✅ **Version Control**: Documentation changes tracked through Git with minimal conflicts
+- ✅ **Type-Safe**: Full TypeScript integration with type definitions
+
+#### Updating Function Documentation
+To add or modify function documentation:
+
+1. **One File Per Function** - Each function has its own markdown file in `docs/functions/backend/`:
+   - Examples: `search_games.md`, `apply_fusion_ranking.md`, `validate_search_query.md`
+   - Total: 12 individual function documentation files
+   - This structure improves readability and makes it easier to locate specific functions
+
+2. **To modify an existing function**, edit its markdown file directly:
+   - Locate the file: `docs/functions/backend/<function_name>.md`
+   - Make your changes
+   - Save the file
+   - Refresh the function library page - changes appear automatically!
+
+3. **To add a new function**, create a new markdown file following this format:
+```markdown
+# function_name
+
+## function_name
+
+**Category:** API Endpoint
+**Complexity:** High
+**Last Updated:** 2024-10-10
+
+### Description
+Function description here...
+
+### Signature
+\`\`\`python
+def function_name(param: type) -> ReturnType:
+\`\`\`
+
+### Parameters
+- `param` (type, required): Parameter description
+
+### Returns
+- `ReturnType`: Return value description
+
+### Example
+\`\`\`python
+# Usage example
+result = function_name(value)
+\`\`\`
+
+### Tags
+#tag1 #tag2
+```
+
+**File naming**: Use the exact function name as the filename (e.g., `my_function.md` for `my_function()`)
 
 ### Categories
 - **API Endpoints**: FastAPI endpoint functions (search_games, get_game_detail, health_check)
@@ -221,9 +312,11 @@ The project includes a comprehensive function library documenting all Python Fas
 Each Python function is documented with:
 - Detailed description and purpose
 - Python function signature with type hints
+- Complete parameter documentation with types and default values
 - Usage examples with working Python code
 - Related functions and dependencies
 - Complexity assessment and performance notes
+- Tags for easy searching and categorization
 - Integration with FastAPI framework
 
 ### Function Examples
@@ -235,14 +328,85 @@ Each Python function is documented with:
 
 Visit `/function-library` to explore the complete Python backend documentation.
 
+### Technical Implementation
+- **Parser**: Custom markdown parser with nested directory support (`src/utils/markdownParser.ts`)
+- **API Endpoint**: `/api/functions` - Reads markdown files and category metadata
+- **Navigator**: Left sidebar component with category navigation (`FunctionNavigator.tsx`)
+- **Frontend**: Dynamic rendering with search, filter, and category navigation
+- **Tests**: Comprehensive test suite in `test/` directory
+- **Structure**: 4 categories, 12 functions, 17 total files
+
+### Directory Structure
+```
+docs/functions/backend/
+├── api-endpoints/        (🌐 4 functions) - REST API endpoints
+├── search-algorithms/    (🔍 3 functions) - Search & ranking algorithms
+├── data-access/          (💾 4 functions) - Database operations
+└── validation/           (🔒 1 function)  - Security & validation
+```
+
 ## 🧪 Testing
 
-### Unit Tests
+The project includes comprehensive tests for all major functionality, including the new markdown-based function library system.
+
+### Test Suite Overview
+
+#### 1. Markdown Parser Tests (`test/markdownParser.test.ts`)
+Tests for the markdown parsing utility:
+- ✅ Parse single and multiple function documents
+- ✅ Extract function metadata (category, complexity, dates)
+- ✅ Parse parameters with types and defaults
+- ✅ Extract code examples and signatures
+- ✅ Parse tags and related functions
+- ✅ Handle edge cases and invalid input
+- ✅ Validate documentation completeness
+
+#### 2. Function Library Integration Tests (`test/functionLibrary.integration.test.ts`)
+End-to-end tests for the function library feature:
+- ✅ API endpoint responses
+- ✅ Frontend component rendering
+- ✅ Search and filter functionality
+- ✅ Error handling and recovery
+- ✅ User interactions (expand/collapse, copy code)
+- ✅ Performance with large datasets
+
+### Running Tests
+
+#### Run All Tests
 ```bash
 npm test                    # Run all tests
 npm run test:watch         # Run tests in watch mode
 npm run test:coverage      # Generate coverage report
 ```
+
+#### Run Specific Test Suites
+```bash
+npm test markdownParser.test.ts              # Test markdown parser only
+npm test functionLibrary.integration.test.tsx # Test function library integration
+```
+
+#### Test with Verbose Output
+```bash
+npm test -- --verbose       # Show detailed test output
+```
+
+### Test Coverage Goals
+
+| Type      | Target | Description                |
+|-----------|--------|----------------------------|
+| Statements| ≥ 80%  | Code coverage for all files|
+| Branches  | ≥ 75%  | Conditional logic coverage |
+| Functions | ≥ 80%  | Function execution coverage|
+| Lines     | ≥ 80%  | Line-by-line coverage      |
+
+### Test Documentation
+
+For detailed testing information, see [test/README.md](test/README.md) which includes:
+- Complete test suite documentation
+- Running and debugging tests
+- Adding new tests
+- Best practices and conventions
+- CI/CD integration
 
 ### Type Checking
 ```bash
@@ -254,6 +418,20 @@ npm run type-check         # Check TypeScript types
 npm run lint               # Check code quality
 npm run lint:fix           # Fix auto-fixable issues
 ```
+
+### Continuous Integration
+
+Tests run automatically on:
+- Push to any branch
+- Pull request creation
+- Merge to main branch
+
+The CI pipeline includes:
+1. Install dependencies
+2. TypeScript type checking
+3. ESLint code quality checks
+4. Complete test suite execution
+5. Coverage report generation
 
 ## 🚀 Deployment
 

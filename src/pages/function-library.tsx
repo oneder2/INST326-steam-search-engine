@@ -12,6 +12,7 @@ import React, { useState, useEffect } from 'react';
 import MainLayout from '@/components/Layout/MainLayout';
 import FunctionCard from '@/components/FunctionLibrary/FunctionCard';
 import FunctionSearch from '@/components/FunctionLibrary/FunctionSearch';
+import FunctionNavigator from '@/components/FunctionLibrary/FunctionNavigator';
 import { FunctionDoc } from '@/types/functions';
 
 /**
@@ -26,11 +27,13 @@ import { FunctionDoc } from '@/types/functions';
  */
 export default function FunctionLibraryPage() {
   const [functions, setFunctions] = useState<FunctionDoc[]>([]);
+  const [categories, setCategories] = useState<any[]>([]);
   const [filteredFunctions, setFilteredFunctions] = useState<FunctionDoc[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const [isNavVisible, setIsNavVisible] = useState(false);
 
   /**
    * Load function documentation from markdown files
@@ -41,6 +44,11 @@ export default function FunctionLibraryPage() {
 
   /**
    * Filter functions based on search query and category
+   * 
+   * Implementation:
+   * - Supports filtering by category ID (e.g., "api-endpoints") or category name (e.g., "API Endpoint")
+   * - Checks both func.category and func.sourceFile path for category matching
+   * - Combines search and category filters
    */
   useEffect(() => {
     let filtered = functions;
@@ -58,321 +66,82 @@ export default function FunctionLibraryPage() {
 
     // Filter by category
     if (selectedCategory !== 'all') {
-      filtered = filtered.filter(func => func.category === selectedCategory);
+      filtered = filtered.filter(func => {
+        // Match by category ID (from folder name in sourceFile path)
+        const matchesCategoryId = func.sourceFile?.includes(`/${selectedCategory}/`);
+        
+        // Match by category name
+        const matchesCategoryName = func.category === selectedCategory;
+        
+        // Find matching category from categories array
+        const categoryObj = categories.find(cat => 
+          cat.categoryId === selectedCategory || cat.displayName === selectedCategory
+        );
+        
+        const matchesOriginalCategory = categoryObj && func.category === categoryObj.category;
+        
+        return matchesCategoryId || matchesCategoryName || matchesOriginalCategory;
+      });
     }
 
     setFilteredFunctions(filtered);
-  }, [functions, searchQuery, selectedCategory]);
+  }, [functions, searchQuery, selectedCategory, categories]);
 
   /**
-   * Load function documentation from API or static files
+   * Load function documentation from API
+   * 
+   * 实现说明：
+   * - 调用 /api/functions 端点获取数据
+   * - 处理加载状态和错误
+   * - 支持重试机制
    */
   const loadFunctionDocs = async () => {
     setIsLoading(true);
     setError(null);
 
     try {
-      // TODO: Replace with actual API call to load markdown files
-      // const response = await fetch('/api/functions');
-      // const data = await response.json();
-      // setFunctions(data.functions);
+      // 从 API 加载函数文档
+      console.log('Loading function documentation from API...');
+      
+      const response = await fetch('/api/functions');
+      
+      if (!response.ok) {
+        throw new Error(`API request failed: ${response.status} ${response.statusText}`);
+      }
 
-      // Mock Python FastAPI function data - this will be replaced with actual markdown parsing from docs/functions/backend/
-      const mockFunctions: FunctionDoc[] = [
-        {
-          id: 'search-games-endpoint',
-          name: 'search_games',
-          category: 'API Endpoint',
-          description: 'Main FastAPI endpoint implementing unified game search with BM25 keyword search, Faiss semantic search, and fusion ranking',
-          signature: '@app.post("/api/v1/search/games", response_model=GameResultSchema)\nasync def search_games(query: SearchQuerySchema) -> GameResultSchema:',
-          parameters: [
-            {
-              name: 'query',
-              type: 'SearchQuerySchema',
-              description: 'Pydantic model containing search text, filters (price_max, coop_type, platform), and pagination parameters',
-              required: true,
-            },
-          ],
-          returnType: 'GameResultSchema',
-          example: `# FastAPI endpoint implementation
-@app.post("/api/v1/search/games", response_model=GameResultSchema)
-async def search_games(query: SearchQuerySchema) -> GameResultSchema:
-    try:
-        # 1. Validate and sanitize input
-        clean_query = validate_search_query(query.query)
+      const data = await response.json();
 
-        # 2. Perform parallel searches
-        bm25_results = await search_bm25_index(clean_query, query.limit * 2)
-        semantic_results = await search_faiss_index(clean_query, query.limit * 2)
+      if (!data.success) {
+        throw new Error(data.error || 'Failed to load functions');
+      }
 
-        # 3. Apply fusion ranking
-        ranked_results = apply_fusion_ranking(bm25_results, semantic_results)
+      // 设置函数数据和分类数据
+      setFunctions(data.functions || []);
+      setCategories(data.categories || []);
 
-        return paginate_results(ranked_results, query.offset, query.limit)
+      // 在开发环境下显示警告
+      if (process.env.NODE_ENV === 'development' && data.warnings && data.warnings.length > 0) {
+        console.warn('Documentation warnings:', data.warnings);
+      }
 
-    except ValidationError as e:
-        raise HTTPException(status_code=400, detail=str(e))`,
-          tags: ['fastapi', 'endpoint', 'search', 'ranking', 'async'],
-          complexity: 'High',
-          lastUpdated: '2024-10-08',
-        },
-        {
-          id: 'apply-fusion-ranking',
-          name: 'apply_fusion_ranking',
-          category: 'Search Algorithm',
-          description: 'Core fusion ranking algorithm that combines BM25 keyword scores, Faiss semantic scores, and game quality metrics using weighted linear combination',
-          signature: 'async def apply_fusion_ranking(\n    bm25_results: List[BM25Result],\n    faiss_results: List[FaissResult],\n    quality_metrics: Dict[int, RankingMetrics]\n) -> List[FusionResult]:',
-          parameters: [
-            {
-              name: 'bm25_results',
-              type: 'List[BM25Result]',
-              description: 'BM25 keyword search results with game IDs and scores',
-              required: true,
-            },
-            {
-              name: 'faiss_results',
-              type: 'List[FaissResult]',
-              description: 'Faiss semantic search results with similarity scores',
-              required: true,
-            },
-            {
-              name: 'quality_metrics',
-              type: 'Dict[int, RankingMetrics]',
-              description: 'Game quality metrics by game_id (review_stability, player_activity)',
-              required: true,
-            },
-          ],
-          returnType: 'List[FusionResult]',
-          example: `# Apply fusion ranking to search results
-fusion_results = await apply_fusion_ranking(
-    bm25_results=bm25_search_results,
-    faiss_results=semantic_search_results,
-    quality_metrics=game_quality_data
-)
+      console.log(`Successfully loaded ${data.functions?.length || 0} functions and ${data.categories?.length || 0} categories`);
 
-# Results sorted by final_score (descending)
-for result in fusion_results[:10]:
-    print(f"Game {result.game_id}: Score {result.final_score:.3f}")
-    print(f"  BM25: {result.component_scores['bm25']:.3f}")
-    print(f"  Semantic: {result.component_scores['semantic']:.3f}")
-    print(f"  Quality: {result.component_scores['quality']:.3f}")`,
-          tags: ['fusion-ranking', 'algorithm', 'scoring', 'normalization', 'python'],
-          complexity: 'High',
-          lastUpdated: '2024-10-08',
-        },
-        {
-          id: 'validate-search-query',
-          name: 'validate_search_query',
-          category: 'Validation',
-          description: 'Validates and sanitizes user search input to prevent injection attacks, XSS, and ensure query compatibility with search algorithms',
-          signature: 'def validate_search_query(query: str) -> str:',
-          parameters: [
-            {
-              name: 'query',
-              type: 'str',
-              description: 'Raw user search input string',
-              required: true,
-            },
-          ],
-          returnType: 'str',
-          example: `# Validate and sanitize search query
-def validate_search_query(query: str) -> str:
-    if not query or not isinstance(query, str):
-        raise ValueError("Query must be a non-empty string")
-
-    # Length validation
-    if len(query) > 500:
-        raise ValueError("Query exceeds maximum length of 500 characters")
-
-    # Remove malicious patterns
-    cleaned_query = query
-    for pattern in MALICIOUS_PATTERNS:
-        cleaned_query = re.sub(pattern, '', cleaned_query, flags=re.IGNORECASE)
-
-    # Remove HTML tags and normalize whitespace
-    cleaned_query = re.sub(r'<[^>]+>', '', cleaned_query)
-    cleaned_query = re.sub(r'\\s+', ' ', cleaned_query.strip())
-
-    return cleaned_query
-
-# Usage in FastAPI endpoint
-clean_query = validate_search_query(user_input)`,
-          tags: ['validation', 'security', 'sanitization', 'sql-injection', 'python'],
-          complexity: 'Medium',
-          lastUpdated: '2024-10-08',
-        },
-        {
-          id: 'search-bm25-index',
-          name: 'search_bm25_index',
-          category: 'Search Algorithm',
-          description: 'Performs BM25 keyword search on the game index with optimized parameters for game search, considering title, description, and genre fields with different weights',
-          signature: 'async def search_bm25_index(query: str, limit: int = 50) -> List[BM25Result]:',
-          parameters: [
-            {
-              name: 'query',
-              type: 'str',
-              description: 'Cleaned search query text',
-              required: true,
-            },
-            {
-              name: 'limit',
-              type: 'int',
-              description: 'Maximum number of results to return (default: 50)',
-              required: false,
-            },
-          ],
-          returnType: 'List[BM25Result]',
-          example: `# Perform BM25 keyword search
-async def search_bm25_index(query: str, limit: int = 50) -> List[BM25Result]:
-    try:
-        # Tokenize query
-        query_tokens = tokenize_text(query)
-
-        # Get BM25 scores for all documents
-        scores = bm25_index.get_scores(query_tokens)
-
-        # Get top results with scores
-        top_indices = scores.argsort()[-limit:][::-1]
-
-        results = []
-        for idx in top_indices:
-            if scores[idx] > 0:  # Only include positive scores
-                game_id = game_corpus[idx]['game_id']
-                matched_fields = get_matched_fields(query_tokens, game_corpus[idx])
-
-                results.append(BM25Result(
-                    game_id=game_id,
-                    score=float(scores[idx]),
-                    matched_fields=matched_fields
-                ))
-
-        return results
-    except Exception as e:
-        logger.error(f"BM25 search error: {str(e)}")
-        return []`,
-          tags: ['bm25', 'keyword-search', 'ranking', 'algorithm', 'async'],
-          complexity: 'Medium',
-          lastUpdated: '2024-10-08',
-        },
-        {
-          id: 'search-faiss-index',
-          name: 'search_faiss_index',
-          category: 'Search Algorithm',
-          description: 'Performs semantic search using Faiss vector similarity search on game embeddings. Converts user query to vector embedding and finds semantically similar games',
-          signature: 'async def search_faiss_index(query: str, limit: int = 50) -> List[FaissResult]:',
-          parameters: [
-            {
-              name: 'query',
-              type: 'str',
-              description: 'User search query',
-              required: true,
-            },
-            {
-              name: 'limit',
-              type: 'int',
-              description: 'Maximum number of results (default: 50)',
-              required: false,
-            },
-          ],
-          returnType: 'List[FaissResult]',
-          example: `# Perform semantic search using Faiss
-async def search_faiss_index(query: str, limit: int = 50) -> List[FaissResult]:
-    try:
-        # Generate query embedding
-        query_embedding = await generate_query_embedding(query)
-
-        # Search Faiss index
-        distances, indices = faiss_index.search(
-            query_embedding.reshape(1, -1),
-            limit
-        )
-
-        results = []
-        for i, (distance, idx) in enumerate(zip(distances[0], indices[0])):
-            if idx != -1:  # Valid result
-                game_id = game_id_mapping[idx]
-                similarity_score = distance_to_similarity(distance)
-
-                results.append(FaissResult(
-                    game_id=game_id,
-                    similarity_score=similarity_score,
-                    embedding_distance=float(distance)
-                ))
-
-        return results
-    except Exception as e:
-        logger.error(f"Faiss search error: {str(e)}")
-        return []`,
-          tags: ['faiss', 'semantic-search', 'embeddings', 'vector-similarity', 'async'],
-          complexity: 'High',
-          lastUpdated: '2024-10-08',
-        },
-        {
-          id: 'get-game-by-id',
-          name: 'get_game_by_id',
-          category: 'Data Access',
-          description: 'Retrieves a single game\'s information from the SQLite database using its Steam game ID. Returns a Pydantic GameInfo model with all core game metadata',
-          signature: 'async def get_game_by_id(game_id: int) -> Optional[GameInfo]:',
-          parameters: [
-            {
-              name: 'game_id',
-              type: 'int',
-              description: 'Steam game ID to retrieve',
-              required: true,
-            },
-          ],
-          returnType: 'Optional[GameInfo]',
-          example: `# Retrieve game information by ID
-async def get_game_by_id(game_id: int) -> Optional[GameInfo]:
-    try:
-        async with get_db_connection() as conn:
-            cursor = conn.cursor()
-
-            query = """
-            SELECT
-                game_id, title, description, price, genres,
-                coop_type, deck_comp, review_status, release_date,
-                developer, publisher
-            FROM games
-            WHERE game_id = ?
-            """
-
-            cursor.execute(query, (game_id,))
-            row = cursor.fetchone()
-
-            if not row:
-                return None
-
-            # Convert row to GameInfo model
-            game_data = {
-                'game_id': row[0],
-                'title': row[1],
-                'description': row[2],
-                'price': row[3],
-                'genres': json.loads(row[4]) if row[4] else [],
-                'coop_type': row[5],
-                'deck_comp': bool(row[6]),
-                'review_status': row[7],
-                'release_date': row[8],
-                'developer': row[9],
-                'publisher': row[10]
-            }
-
-            return GameInfo(**game_data)
-
-    except sqlite3.Error as e:
-        logger.error(f"Database error retrieving game {game_id}: {str(e)}")
-        return None`,
-          tags: ['database', 'sqlite', 'pydantic', 'async', 'data-access'],
-          complexity: 'Low',
-          lastUpdated: '2024-10-08',
-        },
-      ];
-
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 500));
-
-      setFunctions(mockFunctions);
+      /**
+       * 备用 Mock 数据已移除
+       * 
+       * 说明：原有的 mock 数据已被注释掉，因为现在我们从 markdown 文件动态加载数据
+       * 
+       * 优势：
+       * 1. 提高灵活性：更新函数文档只需修改 markdown 文件
+       * 2. 便于维护：文档和代码分离，易于编辑
+       * 3. 更好的可读性：markdown 格式更易阅读和编辑
+       * 4. 支持版本控制：文档变更可以通过 Git 跟踪
+       * 
+       * 如需临时使用 mock 数据进行测试，可以：
+       * 1. 在开发环境中检测 API 失败
+       * 2. 回退到硬编码的测试数据
+       * 3. 或者直接在 docs/functions/backend/ 目录添加测试 markdown 文件
+       */
     } catch (err) {
       setError('Failed to load function documentation. Please try again.');
       console.error('Function docs loading error:', err);
@@ -382,16 +151,25 @@ async def get_game_by_id(game_id: int) -> Optional[GameInfo]:
   };
 
   /**
-   * Get unique categories from functions
+   * Get function counts by category
    */
-  const categories = ['all', ...Array.from(new Set(functions.map(func => func.category)))];
+  const functionCounts = React.useMemo(() => {
+    const counts: Record<string, number> = {};
+    categories.forEach(cat => {
+      counts[cat.categoryId] = functions.filter(f => 
+        f.category === cat.category || 
+        f.sourceFile?.includes(`/${cat.categoryId}/`)
+      ).length;
+    });
+    return counts;
+  }, [functions, categories]);
 
   /**
    * Get function statistics
    */
   const stats = {
     total: functions.length,
-    categories: categories.length - 1, // Exclude 'all'
+    categories: categories.length,
     complexity: {
       low: functions.filter(f => f.complexity === 'Low').length,
       medium: functions.filter(f => f.complexity === 'Medium').length,
@@ -404,7 +182,30 @@ async def get_game_by_id(game_id: int) -> Optional[GameInfo]:
       title="Python Backend Function Library - Steam Game Search Engine"
       description="Comprehensive documentation of all Python FastAPI backend functions used in the Steam Game Search Engine project"
     >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="flex min-h-screen">
+        {/* 左侧导航栏 */}
+        <FunctionNavigator
+          categories={categories}
+          selectedCategory={selectedCategory}
+          onCategoryChange={setSelectedCategory}
+          functionCounts={functionCounts}
+          isVisible={isNavVisible}
+          onClose={() => setIsNavVisible(false)}
+        />
+
+        {/* 主内容区域 */}
+        <div className="flex-1 overflow-auto">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            {/* 移动端导航栏切换按钮 */}
+            <button
+              onClick={() => setIsNavVisible(true)}
+              className="lg:hidden fixed bottom-4 right-4 z-30 p-4 bg-steam-green text-white rounded-full shadow-lg hover:bg-steam-green-light transition-colors"
+              aria-label="Open Navigation"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            </button>
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-white mb-4">
@@ -439,17 +240,17 @@ async def get_game_by_id(game_id: int) -> Optional[GameInfo]:
           </div>
         </div>
 
-        {/* Search and Filters */}
-        <div className="mb-8">
-          <FunctionSearch
-            searchQuery={searchQuery}
-            onSearchChange={setSearchQuery}
-            selectedCategory={selectedCategory}
-            onCategoryChange={setSelectedCategory}
-            categories={categories}
-            isLoading={isLoading}
-          />
-        </div>
+            {/* Search and Filters */}
+            <div className="mb-8">
+              <FunctionSearch
+                searchQuery={searchQuery}
+                onSearchChange={setSearchQuery}
+                selectedCategory={selectedCategory}
+                onCategoryChange={setSelectedCategory}
+                categories={['all', ...categories.map(c => c.displayName)]}
+                isLoading={isLoading}
+              />
+            </div>
 
         {/* Results */}
         {isLoading ? (
@@ -492,30 +293,32 @@ async def get_game_by_id(game_id: int) -> Optional[GameInfo]:
           </div>
         )}
 
-        {/* Export Section */}
-        {functions.length > 0 && (
-          <div className="mt-12 pt-8 border-t border-steam-blue-light">
-            <div className="text-center">
-              <h2 className="text-xl font-semibold text-white mb-4">
-                Export Documentation
-              </h2>
-              <p className="text-gray-300 mb-6">
-                Export function documentation for assignment submission
-              </p>
-              <div className="space-x-4">
-                <button className="btn-steam">
-                  Export as PDF
-                </button>
-                <button className="btn-steam">
-                  Export as Markdown
-                </button>
-                <button className="btn-steam">
-                  Export as JSON
-                </button>
+            {/* Export Section */}
+            {functions.length > 0 && (
+              <div className="mt-12 pt-8 border-t border-steam-blue-light">
+                <div className="text-center">
+                  <h2 className="text-xl font-semibold text-white mb-4">
+                    Export Documentation
+                  </h2>
+                  <p className="text-gray-300 mb-6">
+                    Export function documentation for assignment submission
+                  </p>
+                  <div className="space-x-4">
+                    <button className="btn-steam">
+                      Export as PDF
+                    </button>
+                    <button className="btn-steam">
+                      Export as Markdown
+                    </button>
+                    <button className="btn-steam">
+                      Export as JSON
+                    </button>
+                  </div>
+                </div>
               </div>
-            </div>
+            )}
           </div>
-        )}
+        </div>
       </div>
     </MainLayout>
   );
