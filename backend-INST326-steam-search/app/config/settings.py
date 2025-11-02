@@ -1,5 +1,5 @@
 """
-Steam Game Search Engine - Configuration Module
+Steam Game Search Engine - Configuration Settings
 配置管理模块，用于处理环境变量和应用程序设置
 
 This module handles all configuration settings for the FastAPI backend,
@@ -31,7 +31,7 @@ class Settings(BaseSettings):
     # API配置 / API Configuration
     # ============================================================================
     api_title: str = Field(default="Steam Game Search Engine API", description="API标题")
-    api_version: str = Field(default="1.0.0", description="API版本")
+    api_version: str = Field(default="2.0.0", description="API版本")
     api_description: str = Field(default="Python FastAPI backend for intelligent game search", description="API描述")
     
     # ============================================================================
@@ -53,13 +53,11 @@ class Settings(BaseSettings):
     database_url: str = Field(default="sqlite:///data/games_data.db", description="数据库连接URL")
     database_timeout: float = Field(default=30.0, description="数据库连接超时时间")
     
-    # ============================================================================
-    # 搜索索引配置 / Search Index Configuration
-    # ============================================================================
-    faiss_index_path: str = Field(default="data/game_embeddings.faiss", description="Faiss索引文件路径")
-    bm25_index_path: str = Field(default="data/bm25_index.pkl", description="BM25索引文件路径")
-    game_id_mapping_path: str = Field(default="data/game_id_mapping.json", description="游戏ID映射文件路径")
-    embedding_model: str = Field(default="all-MiniLM-L6-v2", description="嵌入模型名称")
+    def get_database_path(self) -> str:
+        """获取数据库文件路径"""
+        if self.database_url.startswith("sqlite:///"):
+            return self.database_url[10:]  # 移除 "sqlite:///" 前缀
+        return "data/games_data.db"  # 默认路径
     
     # ============================================================================
     # 搜索配置 / Search Configuration
@@ -88,25 +86,32 @@ class Settings(BaseSettings):
     log_file: Optional[str] = Field(default=None, description="日志文件路径")
     
     # ============================================================================
-    # 安全配置 / Security Configuration
+    # 搜索索引配置 / Search Index Configuration
     # ============================================================================
-    secret_key: str = Field(default="your-secret-key-here", description="应用程序密钥")
-    jwt_algorithm: str = Field(default="HS256", description="JWT算法")
-    jwt_expiration: int = Field(default=3600, description="JWT过期时间（秒）")
+    bm25_index_path: str = Field(default="data/bm25_index.pkl", description="BM25索引文件路径")
+    faiss_index_path: str = Field(default="data/game_embeddings.faiss", description="Faiss索引文件路径")
+    game_id_mapping_path: str = Field(default="data/game_id_mapping.json", description="游戏ID映射文件路径")
+    
+    # BM25搜索参数 / BM25 Search Parameters
+    bm25_k1: float = Field(default=1.5, description="BM25 k1参数")
+    bm25_b: float = Field(default=0.75, description="BM25 b参数")
+    
+    # 语义搜索参数 / Semantic Search Parameters
+    embedding_model: str = Field(default="all-MiniLM-L6-v2", description="嵌入模型名称")
+    semantic_search_top_k: int = Field(default=100, description="语义搜索top-k结果数")
+    
+    # 融合排序参数 / Fusion Ranking Parameters
+    bm25_weight: float = Field(default=0.6, description="BM25权重")
+    semantic_weight: float = Field(default=0.4, description="语义搜索权重")
     
     # ============================================================================
-    # 外部API配置 / External API Configuration
+    # 安全和限制配置 / Security and Rate Limiting Configuration
     # ============================================================================
-    steam_api_key: Optional[str] = Field(default=None, description="Steam API密钥")
-    openai_api_key: Optional[str] = Field(default=None, description="OpenAI API密钥")
-    huggingface_api_key: Optional[str] = Field(default=None, description="Hugging Face API密钥")
-    
-    # ============================================================================
-    # 监控配置 / Monitoring Configuration
-    # ============================================================================
-    sentry_dsn: Optional[str] = Field(default=None, description="Sentry DSN")
-    health_check_timeout: float = Field(default=5.0, description="健康检查超时时间")
-    
+    rate_limit_requests: int = Field(default=100, description="每分钟请求限制")
+    rate_limit_window: int = Field(default=60, description="限制窗口时间（秒）")
+    max_query_length: int = Field(default=200, description="最大查询长度")
+    enable_security_validation: bool = Field(default=True, description="启用安全验证")
+
     # ============================================================================
     # 功能开关 / Feature Flags
     # ============================================================================
@@ -121,62 +126,34 @@ class Settings(BaseSettings):
         env_file = ".env"
         env_file_encoding = "utf-8"
         case_sensitive = False
-        
-    def get_database_path(self) -> str:
-        """
-        获取数据库文件路径
-        Get the actual database file path from the URL.
-        """
-        if self.database_url.startswith("sqlite:///"):
-            return self.database_url[10:]  # Remove 'sqlite:///' prefix
-        return self.database_url
-    
-    def validate_paths(self) -> bool:
-        """
-        验证关键文件路径是否存在
-        Validate that critical file paths exist.
-        """
-        critical_paths = [
-            self.get_database_path(),
-            # Note: Index files might not exist initially and will be created
-        ]
-        
-        missing_paths = []
-        for path in critical_paths:
-            if not os.path.exists(path):
-                missing_paths.append(path)
-        
-        if missing_paths:
-            print(f"⚠️  Warning: Missing files: {missing_paths}")
-            return False
-        return True
 
 
-# 全局配置实例 / Global settings instance
-settings = Settings()
+# 全局设置实例 / Global settings instance
+_settings: Optional[Settings] = None
 
 
 def get_settings() -> Settings:
     """
-    获取配置实例
-    Get the global settings instance.
+    获取应用程序设置的单例实例
+    Get singleton instance of application settings.
     
     Returns:
-        Settings: 配置实例
+        Settings: 配置设置实例
     """
-    return settings
+    global _settings
+    if _settings is None:
+        _settings = Settings()
+    return _settings
 
 
-def print_startup_info():
+def reload_settings() -> Settings:
     """
-    打印启动信息
-    Print startup information for debugging.
+    重新加载设置（主要用于测试）
+    Reload settings (mainly for testing).
+    
+    Returns:
+        Settings: 新的配置设置实例
     """
-    print("🔧 Configuration loaded:")
-    print(f"   Environment: {settings.environment}")
-    print(f"   Debug mode: {settings.debug}")
-    print(f"   Database: {settings.get_database_path()}")
-    print(f"   CORS origins: {len(settings.cors_origins_list)} configured")
-    print(f"   Semantic search: {'✅' if settings.enable_semantic_search else '❌'}")
-    print(f"   BM25 search: {'✅' if settings.enable_bm25_search else '❌'}")
-    print(f"   Fusion ranking: {'✅' if settings.enable_fusion_ranking else '❌'}")
+    global _settings
+    _settings = Settings()
+    return _settings

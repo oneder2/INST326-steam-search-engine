@@ -1,0 +1,143 @@
+2025-11-02 18:05:31,042 - __main__ - INFO - 🚀 Starting Steam Game Search Engine on 0.0.0.0:8000
+2025-11-02 18:05:31,042 - __main__ - INFO - 🔧 Environment: development
+2025-11-02 18:05:31,042 - __main__ - INFO - 🐛 Debug mode: False
+2025-11-02 18:05:32,495 - app.main - INFO - 🚀 Steam Game Search Engine API starting up...
+2025-11-02 18:05:32,496 - app.core.engine - INFO - GameSearchEngine created, awaiting initialization
+2025-11-02 18:05:32,496 - app.core.engine - INFO - Initializing GameSearchEngine components...
+2025-11-02 18:05:32,499 - app.data.providers.mock - INFO - MockDataProvider initialized with 50 games
+2025-11-02 18:05:32,499 - app.data.repositories.game_repository - INFO - GameRepository initialized with MockDataProvider
+2025-11-02 18:05:32,499 - app.core.engine - INFO - Game repository initialized
+2025-11-02 18:05:32,499 - app.core.search.service - INFO - SearchService initialized with mock algorithms
+2025-11-02 18:05:32,499 - app.core.search.service - INFO - SearchService initialized with 50 games
+2025-11-02 18:05:32,500 - app.core.engine - INFO - Search service initialized
+2025-11-02 18:05:32,500 - app.core.security.manager - INFO - SecurityManager initialized with security patterns
+2025-11-02 18:05:32,500 - app.core.engine - INFO - Security manager initialized
+2025-11-02 18:05:32,500 - app.core.monitoring.health - INFO - HealthMonitor initialized
+2025-11-02 18:05:32,500 - app.core.engine - INFO - Health monitor initialized
+2025-11-02 18:05:32,500 - app.core.engine - INFO - GameSearchEngine initialization completed successfully
+2025-11-02 18:05:32,500 - performance - INFO - Performance: search_engine_initialization | Duration: 0.0045s | {"timestamp": "2025-11-02T23:05:32.500766", "operation": "search_engine_initialization", "duration_seconds": 0.0045, "details": {}}
+2025-11-02 18:05:32,501 - app.main - INFO - ✅ GameSearchEngine initialized successfully!
+2025-11-02 18:05:32,529 - app.main - INFO - 🚀 Steam Game Search Engine API starting up...
+2025-11-02 18:05:32,529 - app.core.engine - INFO - GameSearchEngine created, awaiting initialization
+2025-11-02 18:05:32,530 - app.core.engine - INFO - Initializing GameSearchEngine components...
+2025-11-02 18:05:32,533 - app.data.providers.mock - INFO - MockDataProvider initialized with 50 games
+2025-11-02 18:05:32,534 - app.data.repositories.game_repository - INFO - GameRepository initialized with MockDataProvider
+2025-11-02 18:05:32,534 - app.core.engine - INFO - Game repository initialized
+2025-11-02 18:05:32,534 - app.core.search.service - INFO - SearchService initialized with mock algorithms
+2025-11-02 18:05:32,534 - app.core.search.service - INFO - SearchService initialized with 50 games
+2025-11-02 18:05:32,534 - app.core.engine - INFO - Search service initialized
+2025-11-02 18:05:32,534 - app.core.security.manager - INFO - SecurityManager initialized with security patterns
+2025-11-02 18:05:32,534 - app.core.engine - INFO - Security manager initialized
+2025-11-02 18:05:32,534 - app.core.monitoring.health - INFO - HealthMonitor initialized
+2025-11-02 18:05:32,535 - app.core.engine - INFO - Health monitor initialized
+2025-11-02 18:05:32,535 - app.core.engine - INFO - GameSearchEngine initialization completed successfully
+2025-11-02 18:05:32,535 - performance - INFO - Performance: search_engine_initialization | Duration: 0.0051s | {"timestamp": "2025-11-02T23:05:32.535241", "operation": "search_engine_initialization", "duration_seconds": 0.0051, "details": {}}
+2025-11-02 18:05:32,535 - app.main - INFO - ✅ GameSearchEngine initialized successfully!
+2025-11-02 18:05:32,654 - app.main - INFO - 🚀 Steam Game Search Engine API starting up...
+2025-11-02 18:05:32,655 - app.core.engine - INFO - GameSearchEngine created, awaiting initialization
+2025-11-02 18:05:32,655 - app.core.engine - INFO - Initializing GameSearchEngine components...
+2025-11-02 18:05:32,657 - app.data.providers.mock - INFO - MockDataProvider initialized with 50 games
+2025-11-02 18:05:32,658 - app.data.repositories.game_repository - INFO - GameRepository initialized with MockDataProvider
+2025-11-02 18:05:32,658 - app.core.engine - INFO - Game repository initialized
+2025-11-02 18:05:32,658 - app.core.search.service - INFO - SearchService initialized with mock algorithms
+2025-11-02 18:05:32,658 - app.core.search.service - INFO - SearchService initialized with 50 games
+2025-11-02 18:05:32,658 - app.core.engine - INFO - Search service initialized
+2025-11-02 18:05:32,658 - app.core.security.manager - INFO - SecurityManager initialized with security patterns
+2025-11-02 18:05:32,659 - app.core.engine - INFO - Security manager initialized
+2025-11-02 18:05:32,659 - app.core.monitoring.health - INFO - HealthMonitor initialized
+2025-11-02 18:05:32,659 - app.core.engine - INFO - Health monitor initialized
+2025-11-02 18:05:32,659 - app.core.engine - INFO - GameSearchEngine initialization completed successfully
+2025-11-02 18:05:32,659 - performance - INFO - Performance: search_engine_initialization | Duration: 0.0043s | {"timestamp": "2025-11-02T23:05:32.659595", "operation": "search_engine_initialization", "duration_seconds": 0.0043, "details": {}}
+2025-11-02 18:05:32,659 - app.main - INFO - ✅ GameSearchEngine initialized successfully!
+2025-11-02 18:05:32,660 - app.main - INFO - 🚀 Steam Game Search Engine API starting up...
+2025-11-02 18:05:32,660 - app.core.engine - INFO - GameSearchEngine created, awaiting initialization
+2025-11-02 18:05:32,660 - app.core.engine - INFO - Initializing GameSearchEngine components...
+2025-11-02 18:05:32,663 - app.data.providers.mock - INFO - MockDataProvider initialized with 50 games
+2025-11-02 18:05:32,663 - app.data.repositories.game_repository - INFO - GameRepository initialized with MockDataProvider
+2025-11-02 18:05:32,663 - app.core.engine - INFO - Game repository initialized
+2025-11-02 18:05:32,663 - app.core.search.service - INFO - SearchService initialized with mock algorithms
+2025-11-02 18:05:32,663 - app.core.search.service - INFO - SearchService initialized with 50 games
+2025-11-02 18:05:32,663 - app.core.engine - INFO - Search service initialized
+2025-11-02 18:05:32,663 - app.core.security.manager - INFO - SecurityManager initialized with security patterns
+2025-11-02 18:05:32,664 - app.core.engine - INFO - Security manager initialized
+2025-11-02 18:05:32,664 - app.core.monitoring.health - INFO - HealthMonitor initialized
+2025-11-02 18:05:32,664 - app.core.engine - INFO - Health monitor initialized
+2025-11-02 18:05:32,664 - app.core.engine - INFO - GameSearchEngine initialization completed successfully
+2025-11-02 18:05:32,664 - performance - INFO - Performance: search_engine_initialization | Duration: 0.0039s | {"timestamp": "2025-11-02T23:05:32.664449", "operation": "search_engine_initialization", "duration_seconds": 0.0039, "details": {}}
+2025-11-02 18:05:32,664 - app.main - INFO - ✅ GameSearchEngine initialized successfully!
+2025-11-02 18:05:54,633 - app.api.routes.health - INFO - Health check completed: status=degraded
+2025-11-02 18:05:54,634 - api - INFO - API Request: GET /api/v1/health | Status: 200 | Duration: 1.0016s | {"timestamp": "2025-11-02T23:05:54.634262", "method": "GET", "path": "/api/v1/health", "status_code": 200, "duration_seconds": 1.0016, "client_ip": "127.0.0.1", "user_agent": "Steam-Game-Search-Engine-Test/2.0", "query_params": null}
+2025-11-02 18:05:54,635 - api - INFO - API Request: GET /api/v1/health | Status: 200 | Duration: 1.0047s | {"timestamp": "2025-11-02T23:05:54.635223", "method": "GET", "path": "/api/v1/health", "status_code": 200, "duration_seconds": 1.0047, "client_ip": "127.0.0.1", "user_agent": "Steam-Game-Search-Engine-Test/2.0", "query_params": {}}
+2025-11-02 18:05:54,652 - app.core.search.service - INFO - Search completed: query='action games', results=10
+2025-11-02 18:05:54,653 - app.core.engine - INFO - Search completed: query='action games', results=10
+2025-11-02 18:05:54,654 - performance - INFO - Performance: game_search_operation | Duration: 0.0120s | {"timestamp": "2025-11-02T23:05:54.654109", "operation": "game_search_operation", "duration_seconds": 0.012, "details": {}}
+2025-11-02 18:05:54,654 - app.api.routes.search - INFO - Search completed: query='action games', results=5
+2025-11-02 18:05:54,655 - api - INFO - API Request: POST /api/v1/search/games | Status: 200 | Duration: 0.0132s | {"timestamp": "2025-11-02T23:05:54.655213", "method": "POST", "path": "/api/v1/search/games", "status_code": 200, "duration_seconds": 0.0132, "client_ip": "127.0.0.1", "user_agent": "Steam-Game-Search-Engine-Test/2.0", "query_params": {"query": "action games"}}
+2025-11-02 18:05:54,656 - api - INFO - API Request: POST /api/v1/search/games | Status: 200 | Duration: 0.0159s | {"timestamp": "2025-11-02T23:05:54.656385", "method": "POST", "path": "/api/v1/search/games", "status_code": 200, "duration_seconds": 0.0159, "client_ip": "127.0.0.1", "user_agent": "Steam-Game-Search-Engine-Test/2.0", "query_params": {}}
+2025-11-02 18:05:54,709 - app.core.search.service - INFO - Search completed: query='rpg', results=0
+2025-11-02 18:05:54,709 - app.core.engine - INFO - Search completed: query='rpg', results=0
+2025-11-02 18:05:54,709 - performance - INFO - Performance: game_search_operation | Duration: 0.0054s | {"timestamp": "2025-11-02T23:05:54.709412", "operation": "game_search_operation", "duration_seconds": 0.0054, "details": {}}
+2025-11-02 18:05:54,709 - app.api.routes.search - INFO - Search completed: query='rpg', results=0
+2025-11-02 18:05:54,709 - api - INFO - API Request: POST /api/v1/search/games | Status: 200 | Duration: 0.0060s | {"timestamp": "2025-11-02T23:05:54.709850", "method": "POST", "path": "/api/v1/search/games", "status_code": 200, "duration_seconds": 0.006, "client_ip": "127.0.0.1", "user_agent": "Steam-Game-Search-Engine-Test/2.0", "query_params": {"query": "rpg"}}
+2025-11-02 18:05:54,710 - api - INFO - API Request: POST /api/v1/search/games | Status: 200 | Duration: 0.0086s | {"timestamp": "2025-11-02T23:05:54.710798", "method": "POST", "path": "/api/v1/search/games", "status_code": 200, "duration_seconds": 0.0086, "client_ip": "127.0.0.1", "user_agent": "Steam-Game-Search-Engine-Test/2.0", "query_params": {}}
+2025-11-02 18:05:54,766 - app.core.search.service - INFO - Search completed: query='strategy', results=8
+2025-11-02 18:05:54,767 - app.core.engine - INFO - Search completed: query='strategy', results=8
+2025-11-02 18:05:54,768 - performance - INFO - Performance: game_search_operation | Duration: 0.0074s | {"timestamp": "2025-11-02T23:05:54.768165", "operation": "game_search_operation", "duration_seconds": 0.0074, "details": {}}
+2025-11-02 18:05:54,768 - app.api.routes.search - INFO - Search completed: query='strategy', results=4
+2025-11-02 18:05:54,768 - api - INFO - API Request: POST /api/v1/search/games | Status: 200 | Duration: 0.0081s | {"timestamp": "2025-11-02T23:05:54.768694", "method": "POST", "path": "/api/v1/search/games", "status_code": 200, "duration_seconds": 0.0081, "client_ip": "127.0.0.1", "user_agent": "Steam-Game-Search-Engine-Test/2.0", "query_params": {"query": "strategy"}}
+2025-11-02 18:05:54,769 - api - INFO - API Request: POST /api/v1/search/games | Status: 200 | Duration: 0.0110s | {"timestamp": "2025-11-02T23:05:54.769625", "method": "POST", "path": "/api/v1/search/games", "status_code": 200, "duration_seconds": 0.011, "client_ip": "127.0.0.1", "user_agent": "Steam-Game-Search-Engine-Test/2.0", "query_params": {}}
+2025-11-02 18:05:54,824 - app.core.search.service - INFO - Search completed: query='indie', results=12
+2025-11-02 18:05:54,825 - app.core.engine - INFO - Search completed: query='indie', results=12
+2025-11-02 18:05:54,825 - performance - INFO - Performance: game_search_operation | Duration: 0.0070s | {"timestamp": "2025-11-02T23:05:54.825310", "operation": "game_search_operation", "duration_seconds": 0.007, "details": {}}
+2025-11-02 18:05:54,825 - app.api.routes.search - INFO - Search completed: query='indie', results=6
+2025-11-02 18:05:54,825 - api - INFO - API Request: POST /api/v1/search/games | Status: 200 | Duration: 0.0076s | {"timestamp": "2025-11-02T23:05:54.825881", "method": "POST", "path": "/api/v1/search/games", "status_code": 200, "duration_seconds": 0.0076, "client_ip": "127.0.0.1", "user_agent": "Steam-Game-Search-Engine-Test/2.0", "query_params": {"query": "indie"}}
+2025-11-02 18:05:54,827 - api - INFO - API Request: POST /api/v1/search/games | Status: 200 | Duration: 0.0109s | {"timestamp": "2025-11-02T23:05:54.826913", "method": "POST", "path": "/api/v1/search/games", "status_code": 200, "duration_seconds": 0.0109, "client_ip": "127.0.0.1", "user_agent": "Steam-Game-Search-Engine-Test/2.0", "query_params": {}}
+2025-11-02 18:05:54,872 - app.core.engine - INFO - Game detail retrieved: ID=1, title='Hades'
+2025-11-02 18:05:54,873 - performance - INFO - Performance: get_game_detail | Duration: 0.0002s | {"timestamp": "2025-11-02T23:05:54.873155", "operation": "get_game_detail", "duration_seconds": 0.0002, "details": {}}
+2025-11-02 18:05:54,873 - app.api.routes.games - INFO - Game detail retrieved: ID=1, title='Hades'
+2025-11-02 18:05:54,873 - api - INFO - API Request: GET /api/v1/games/1 | Status: 200 | Duration: 0.0006s | {"timestamp": "2025-11-02T23:05:54.873535", "method": "GET", "path": "/api/v1/games/1", "status_code": 200, "duration_seconds": 0.0006, "client_ip": "127.0.0.1", "user_agent": "Steam-Game-Search-Engine-Test/2.0", "query_params": {"game_id": 1}}
+2025-11-02 18:05:54,874 - api - INFO - API Request: GET /api/v1/games/1 | Status: 200 | Duration: 0.0021s | {"timestamp": "2025-11-02T23:05:54.873991", "method": "GET", "path": "/api/v1/games/1", "status_code": 200, "duration_seconds": 0.0021, "client_ip": "127.0.0.1", "user_agent": "Steam-Game-Search-Engine-Test/2.0", "query_params": {}}
+2025-11-02 18:05:54,922 - app.core.engine - INFO - Game detail retrieved: ID=2, title='Cyberpunk 2077'
+2025-11-02 18:05:54,922 - performance - INFO - Performance: get_game_detail | Duration: 0.0002s | {"timestamp": "2025-11-02T23:05:54.922280", "operation": "get_game_detail", "duration_seconds": 0.0002, "details": {}}
+2025-11-02 18:05:54,922 - app.api.routes.games - INFO - Game detail retrieved: ID=2, title='Cyberpunk 2077'
+2025-11-02 18:05:54,922 - api - INFO - API Request: GET /api/v1/games/2 | Status: 200 | Duration: 0.0007s | {"timestamp": "2025-11-02T23:05:54.922753", "method": "GET", "path": "/api/v1/games/2", "status_code": 200, "duration_seconds": 0.0007, "client_ip": "127.0.0.1", "user_agent": "Steam-Game-Search-Engine-Test/2.0", "query_params": {"game_id": 2}}
+2025-11-02 18:05:54,923 - api - INFO - API Request: GET /api/v1/games/2 | Status: 200 | Duration: 0.0023s | {"timestamp": "2025-11-02T23:05:54.923414", "method": "GET", "path": "/api/v1/games/2", "status_code": 200, "duration_seconds": 0.0023, "client_ip": "127.0.0.1", "user_agent": "Steam-Game-Search-Engine-Test/2.0", "query_params": {}}
+2025-11-02 18:05:54,970 - app.core.engine - INFO - Game detail retrieved: ID=3, title='Stardew Valley'
+2025-11-02 18:05:54,970 - performance - INFO - Performance: get_game_detail | Duration: 0.0002s | {"timestamp": "2025-11-02T23:05:54.970785", "operation": "get_game_detail", "duration_seconds": 0.0002, "details": {}}
+2025-11-02 18:05:54,971 - app.api.routes.games - INFO - Game detail retrieved: ID=3, title='Stardew Valley'
+2025-11-02 18:05:54,971 - api - INFO - API Request: GET /api/v1/games/3 | Status: 200 | Duration: 0.0007s | {"timestamp": "2025-11-02T23:05:54.971221", "method": "GET", "path": "/api/v1/games/3", "status_code": 200, "duration_seconds": 0.0007, "client_ip": "127.0.0.1", "user_agent": "Steam-Game-Search-Engine-Test/2.0", "query_params": {"game_id": 3}}
+2025-11-02 18:05:54,971 - api - INFO - API Request: GET /api/v1/games/3 | Status: 200 | Duration: 0.0022s | {"timestamp": "2025-11-02T23:05:54.971904", "method": "GET", "path": "/api/v1/games/3", "status_code": 200, "duration_seconds": 0.0022, "client_ip": "127.0.0.1", "user_agent": "Steam-Game-Search-Engine-Test/2.0", "query_params": {}}
+2025-11-02 18:05:55,017 - app.core.engine - INFO - Game detail retrieved: ID=5, title='Civilization VI'
+2025-11-02 18:05:55,018 - performance - INFO - Performance: get_game_detail | Duration: 0.0005s | {"timestamp": "2025-11-02T23:05:55.018419", "operation": "get_game_detail", "duration_seconds": 0.0005, "details": {}}
+2025-11-02 18:05:55,018 - app.api.routes.games - INFO - Game detail retrieved: ID=5, title='Civilization VI'
+2025-11-02 18:05:55,019 - api - INFO - API Request: GET /api/v1/games/5 | Status: 200 | Duration: 0.0012s | {"timestamp": "2025-11-02T23:05:55.019038", "method": "GET", "path": "/api/v1/games/5", "status_code": 200, "duration_seconds": 0.0012, "client_ip": "127.0.0.1", "user_agent": "Steam-Game-Search-Engine-Test/2.0", "query_params": {"game_id": 5}}
+2025-11-02 18:05:55,019 - api - INFO - API Request: GET /api/v1/games/5 | Status: 200 | Duration: 0.0037s | {"timestamp": "2025-11-02T23:05:55.019877", "method": "GET", "path": "/api/v1/games/5", "status_code": 200, "duration_seconds": 0.0037, "client_ip": "127.0.0.1", "user_agent": "Steam-Game-Search-Engine-Test/2.0", "query_params": {}}
+2025-11-02 18:05:55,064 - app.core.engine - INFO - Game detail retrieved: ID=10, title='Terraria'
+2025-11-02 18:05:55,065 - performance - INFO - Performance: get_game_detail | Duration: 0.0002s | {"timestamp": "2025-11-02T23:05:55.065115", "operation": "get_game_detail", "duration_seconds": 0.0002, "details": {}}
+2025-11-02 18:05:55,065 - app.api.routes.games - INFO - Game detail retrieved: ID=10, title='Terraria'
+2025-11-02 18:05:55,065 - api - INFO - API Request: GET /api/v1/games/10 | Status: 200 | Duration: 0.0007s | {"timestamp": "2025-11-02T23:05:55.065607", "method": "GET", "path": "/api/v1/games/10", "status_code": 200, "duration_seconds": 0.0007, "client_ip": "127.0.0.1", "user_agent": "Steam-Game-Search-Engine-Test/2.0", "query_params": {"game_id": 10}}
+2025-11-02 18:05:55,066 - api - INFO - API Request: GET /api/v1/games/10 | Status: 200 | Duration: 0.0023s | {"timestamp": "2025-11-02T23:05:55.066418", "method": "GET", "path": "/api/v1/games/10", "status_code": 200, "duration_seconds": 0.0023, "client_ip": "127.0.0.1", "user_agent": "Steam-Game-Search-Engine-Test/2.0", "query_params": {}}
+2025-11-02 18:05:55,111 - app.core.engine - INFO - Search suggestions generated: prefix='act', count=2
+2025-11-02 18:05:55,112 - performance - INFO - Performance: get_search_suggestions | Duration: 0.0008s | {"timestamp": "2025-11-02T23:05:55.112430", "operation": "get_search_suggestions", "duration_seconds": 0.0008, "details": {}}
+2025-11-02 18:05:55,112 - app.api.routes.search - INFO - Search suggestions generated: prefix='act', count=2
+2025-11-02 18:05:55,112 - performance - INFO - Performance: search_suggestions_api | Duration: 0.0013s | {"timestamp": "2025-11-02T23:05:55.112893", "operation": "search_suggestions_api", "duration_seconds": 0.0013, "details": {}}
+2025-11-02 18:05:55,113 - api - INFO - API Request: GET /api/v1/search/suggest | Status: 200 | Duration: 0.0015s | {"timestamp": "2025-11-02T23:05:55.113131", "method": "GET", "path": "/api/v1/search/suggest", "status_code": 200, "duration_seconds": 0.0015, "client_ip": "127.0.0.1", "user_agent": "Steam-Game-Search-Engine-Test/2.0", "query_params": {"prefix": "act", "limit": 10}}
+2025-11-02 18:05:55,113 - api - INFO - API Request: GET /api/v1/search/suggest | Status: 200 | Duration: 0.0040s | {"timestamp": "2025-11-02T23:05:55.113841", "method": "GET", "path": "/api/v1/search/suggest", "status_code": 200, "duration_seconds": 0.004, "client_ip": "127.0.0.1", "user_agent": "Steam-Game-Search-Engine-Test/2.0", "query_params": {"prefix": "act"}}
+2025-11-02 18:05:55,158 - app.core.engine - INFO - Search suggestions generated: prefix='rpg', count=7
+2025-11-02 18:05:55,158 - performance - INFO - Performance: get_search_suggestions | Duration: 0.0003s | {"timestamp": "2025-11-02T23:05:55.158644", "operation": "get_search_suggestions", "duration_seconds": 0.0003, "details": {}}
+2025-11-02 18:05:55,158 - app.api.routes.search - INFO - Search suggestions generated: prefix='rpg', count=7
+2025-11-02 18:05:55,159 - performance - INFO - Performance: search_suggestions_api | Duration: 0.0007s | {"timestamp": "2025-11-02T23:05:55.159034", "operation": "search_suggestions_api", "duration_seconds": 0.0007, "details": {}}
+2025-11-02 18:05:55,159 - api - INFO - API Request: GET /api/v1/search/suggest | Status: 200 | Duration: 0.0010s | {"timestamp": "2025-11-02T23:05:55.159257", "method": "GET", "path": "/api/v1/search/suggest", "status_code": 200, "duration_seconds": 0.001, "client_ip": "127.0.0.1", "user_agent": "Steam-Game-Search-Engine-Test/2.0", "query_params": {"prefix": "rpg", "limit": 10}}
+2025-11-02 18:05:55,159 - api - INFO - API Request: GET /api/v1/search/suggest | Status: 200 | Duration: 0.0023s | {"timestamp": "2025-11-02T23:05:55.159851", "method": "GET", "path": "/api/v1/search/suggest", "status_code": 200, "duration_seconds": 0.0023, "client_ip": "127.0.0.1", "user_agent": "Steam-Game-Search-Engine-Test/2.0", "query_params": {"prefix": "rpg"}}
+2025-11-02 18:05:55,208 - app.core.engine - INFO - Search suggestions generated: prefix='str', count=8
+2025-11-02 18:05:55,208 - performance - INFO - Performance: get_search_suggestions | Duration: 0.0005s | {"timestamp": "2025-11-02T23:05:55.208416", "operation": "get_search_suggestions", "duration_seconds": 0.0005, "details": {}}
+2025-11-02 18:05:55,208 - app.api.routes.search - INFO - Search suggestions generated: prefix='str', count=8
+2025-11-02 18:05:55,208 - performance - INFO - Performance: search_suggestions_api | Duration: 0.0009s | {"timestamp": "2025-11-02T23:05:55.208850", "operation": "search_suggestions_api", "duration_seconds": 0.0009, "details": {}}
+2025-11-02 18:05:55,209 - api - INFO - API Request: GET /api/v1/search/suggest | Status: 200 | Duration: 0.0011s | {"timestamp": "2025-11-02T23:05:55.209045", "method": "GET", "path": "/api/v1/search/suggest", "status_code": 200, "duration_seconds": 0.0011, "client_ip": "127.0.0.1", "user_agent": "Steam-Game-Search-Engine-Test/2.0", "query_params": {"prefix": "str", "limit": 10}}
+2025-11-02 18:05:55,213 - api - INFO - API Request: GET /api/v1/search/suggest | Status: 200 | Duration: 0.0060s | {"timestamp": "2025-11-02T23:05:55.212920", "method": "GET", "path": "/api/v1/search/suggest", "status_code": 200, "duration_seconds": 0.006, "client_ip": "127.0.0.1", "user_agent": "Steam-Game-Search-Engine-Test/2.0", "query_params": {"prefix": "str"}}
+2025-11-02 18:05:55,265 - app.core.engine - INFO - Search suggestions generated: prefix='ind', count=6
+2025-11-02 18:05:55,267 - performance - INFO - Performance: get_search_suggestions | Duration: 0.0008s | {"timestamp": "2025-11-02T23:05:55.266386", "operation": "get_search_suggestions", "duration_seconds": 0.0008, "details": {}}
+2025-11-02 18:05:55,268 - app.api.routes.search - INFO - Search suggestions generated: prefix='ind', count=6
+2025-11-02 18:05:55,268 - performance - INFO - Performance: search_suggestions_api | Duration: 0.0029s | {"timestamp": "2025-11-02T23:05:55.268466", "operation": "search_suggestions_api", "duration_seconds": 0.0029, "details": {}}
+2025-11-02 18:05:55,269 - api - INFO - API Request: GET /api/v1/search/suggest | Status: 200 | Duration: 0.0037s | {"timestamp": "2025-11-02T23:05:55.269190", "method": "GET", "path": "/api/v1/search/suggest", "status_code": 200, "duration_seconds": 0.0037, "client_ip": "127.0.0.1", "user_agent": "Steam-Game-Search-Engine-Test/2.0", "query_params": {"prefix": "ind", "limit": 10}}
+2025-11-02 18:05:55,270 - api - INFO - API Request: GET /api/v1/search/suggest | Status: 200 | Duration: 0.0087s | {"timestamp": "2025-11-02T23:05:55.270174", "method": "GET", "path": "/api/v1/search/suggest", "status_code": 200, "duration_seconds": 0.0087, "client_ip": "127.0.0.1", "user_agent": "Steam-Game-Search-Engine-Test/2.0", "query_params": {"prefix": "ind"}}
