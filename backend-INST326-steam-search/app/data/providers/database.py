@@ -15,19 +15,29 @@ import logging
 
 from ..models import GameInfo
 from ...config.settings import get_settings
+from .base import DataProvider
 
 # 配置日志 / Configure logging
 logger = logging.getLogger(__name__)
 settings = get_settings()
 
 
-class DatabaseProvider:
+class DatabaseProvider(DataProvider):
     """
-    数据库提供者类
-    Database provider class for SQLite operations.
+    数据库提供者类 - 继承自 DataProvider
+    Database provider class - inherits from DataProvider.
     
-    这个类提供了数据库访问的所有功能，包括连接管理、查询执行等。
-    This class provides all database access functionality including connection management and query execution.
+    这个类继承自抽象基类 DataProvider，实现了所有抽象方法。
+    提供SQLite数据库访问的所有功能，包括连接管理、查询执行等。
+    
+    This class inherits from abstract base class DataProvider and implements all abstract methods.
+    Provides all database access functionality including connection management and query execution.
+    
+    继承关系 / Inheritance Relationship:
+    - 继承自: DataProvider (抽象基类)
+    - Inherits from: DataProvider (abstract base class)
+    - 实现了所有抽象方法，满足Liskov替换原则
+    - Implements all abstract methods, satisfying Liskov Substitution Principle
     """
     
     def __init__(self, db_path: Optional[str] = None):
@@ -35,9 +45,13 @@ class DatabaseProvider:
         初始化数据库提供者
         Initialize database provider with connection settings.
         
+        调用父类构造函数，然后初始化数据库连接设置。
+        Calls parent class constructor, then initializes database connection settings.
+        
         Args:
-            db_path: 数据库文件路径，如果为None则使用配置中的路径
+            db_path: Database file path, if None uses path from settings
         """
+        super().__init__()  # 调用父类构造函数 / Call parent class constructor
         self.db_path = db_path or settings.database_path
         self.connection_pool_size = settings.database_pool_size
         self._connection_pool = []
@@ -67,14 +81,17 @@ class DatabaseProvider:
     
     async def get_game_by_id(self, game_id: int) -> Optional[GameInfo]:
         """
-        根据游戏ID获取单个游戏信息
-        Retrieve a single game's information using its Steam game ID.
+        根据游戏ID获取单个游戏信息（实现抽象方法）
+        Retrieve a single game's information using its Steam game ID (implements abstract method).
+        
+        这个方法实现了父类 DataProvider 中定义的抽象方法。
+        This method implements the abstract method defined in parent class DataProvider.
         
         Args:
-            game_id (int): Steam游戏ID
+            game_id (int): Steam game ID
             
         Returns:
-            Optional[GameInfo]: 游戏信息对象，如果未找到则返回None
+            Optional[GameInfo]: Game information object, or None if not found
         """
         try:
             async with self.get_connection() as conn:
@@ -106,15 +123,18 @@ class DatabaseProvider:
     
     async def get_games_by_ids(self, game_ids: List[int], batch_size: int = 100) -> List[GameInfo]:
         """
-        批量获取多个游戏信息
-        Efficiently retrieve multiple games using a list of Steam game IDs.
+        批量获取多个游戏信息（实现抽象方法）
+        Efficiently retrieve multiple games using a list of Steam game IDs (implements abstract method).
+        
+        这个方法实现了父类 DataProvider 中定义的抽象方法。
+        This method implements the abstract method defined in parent class DataProvider.
         
         Args:
-            game_ids (List[int]): 游戏ID列表
-            batch_size (int): 批处理大小，避免SQL查询长度限制
+            game_ids (List[int]): List of game IDs
+            batch_size (int): Batch size to avoid SQL query length limits
             
         Returns:
-            List[GameInfo]: 找到的游戏信息列表
+            List[GameInfo]: List of found game information objects
         """
         if not game_ids:
             return []
@@ -173,16 +193,19 @@ class DatabaseProvider:
     
     async def search_games_by_title(self, title_query: str, limit: int = 10, fuzzy: bool = True) -> List[GameInfo]:
         """
-        根据标题搜索游戏
-        Search games by title with optional fuzzy matching.
+        根据标题搜索游戏（实现抽象方法）
+        Search games by title with optional fuzzy matching (implements abstract method).
+        
+        这个方法实现了父类 DataProvider 中定义的抽象方法。
+        This method implements the abstract method defined in parent class DataProvider.
         
         Args:
-            title_query (str): 标题查询字符串
-            limit (int): 最大结果数量
-            fuzzy (bool): 是否启用模糊匹配
+            title_query (str): Title query string
+            limit (int): Maximum number of results
+            fuzzy (bool): Whether to enable fuzzy matching
             
         Returns:
-            List[GameInfo]: 匹配的游戏列表
+            List[GameInfo]: List of matching games
         """
         if not title_query:
             return []
@@ -248,11 +271,14 @@ class DatabaseProvider:
     
     async def get_game_count(self) -> int:
         """
-        获取游戏总数
-        Get the total number of games in the database.
+        获取游戏总数（实现抽象方法）
+        Get the total number of games in the database (implements abstract method).
+        
+        这个方法实现了父类 DataProvider 中定义的抽象方法。
+        This method implements the abstract method defined in parent class DataProvider.
         
         Returns:
-            int: 游戏总数
+            int: Total number of games
         """
         try:
             async with self.get_connection() as conn:
@@ -265,13 +291,19 @@ class DatabaseProvider:
             logger.error(f"Database error getting game count: {str(e)}")
             return 0
     
-    async def check_database_health(self) -> bool:
+    async def check_health(self) -> bool:
         """
-        检查数据库健康状态
-        Check database health and connectivity.
+        检查数据库健康状态（重写父类方法）
+        Check database health and connectivity (overrides parent class method).
+        
+        重写父类的 check_health 方法，提供 DatabaseProvider 特定的健康检查逻辑。
+        Overrides parent class check_health method, provides DatabaseProvider-specific health check logic.
+        
+        这展示了方法重写（method overriding）的使用。
+        This demonstrates the use of method overriding.
         
         Returns:
-            bool: 数据库是否健康
+            bool: Whether the database is healthy
         """
         try:
             async with self.get_connection() as conn:
@@ -284,13 +316,29 @@ class DatabaseProvider:
             logger.error(f"Database health check failed: {str(e)}")
             return False
     
-    def get_all_games(self) -> List[GameInfo]:
+    async def check_database_health(self) -> bool:
         """
-        获取所有游戏数据（同步方法，用于索引构建）
-        Get all game data for search indexing (synchronous method).
+        检查数据库健康状态（向后兼容的别名方法）
+        Check database health and connectivity (backward-compatible alias method).
+        
+        这个方法保持向后兼容，实际调用重写的 check_health 方法。
+        This method maintains backward compatibility, actually calls the overridden check_health method.
         
         Returns:
-            List[GameInfo]: 所有游戏列表
+            bool: Whether the database is healthy
+        """
+        return await self.check_health()
+    
+    def get_all_games(self) -> List[GameInfo]:
+        """
+        获取所有游戏数据（实现抽象方法，同步方法，用于索引构建）
+        Get all game data for search indexing (implements abstract method, synchronous method).
+        
+        这个方法实现了父类 DataProvider 中定义的抽象方法。
+        This method implements the abstract method defined in parent class DataProvider.
+        
+        Returns:
+            List[GameInfo]: List of all games
         """
         try:
             conn = sqlite3.connect(self.db_path)

@@ -13,25 +13,39 @@ import logging
 
 from ..models import GameInfo
 from ...config.constants import MOCK_GAMES_COUNT, SAMPLE_DEVELOPERS, SAMPLE_PUBLISHERS, POPULAR_GENRES
+from .base import DataProvider
 
 # 配置日志 / Configure logging
 logger = logging.getLogger(__name__)
 
 
-class MockDataProvider:
+class MockDataProvider(DataProvider):
     """
-    模拟数据提供者类
-    Mock data provider class to replace database functionality temporarily.
+    模拟数据提供者类 - 继承自 DataProvider
+    Mock data provider class - inherits from DataProvider.
     
-    这个类提供了与数据库相同的接口，但使用预定义的模拟数据。
-    This class provides the same interface as database operations but uses predefined mock data.
+    这个类继承自抽象基类 DataProvider，实现了所有抽象方法。
+    使用预定义的模拟数据，用于开发和测试环境。
+    
+    This class inherits from abstract base class DataProvider and implements all abstract methods.
+    Uses predefined mock data for development and testing environments.
+    
+    继承关系 / Inheritance Relationship:
+    - 继承自: DataProvider (抽象基类)
+    - Inherits from: DataProvider (abstract base class)
+    - 实现了所有抽象方法，满足Liskov替换原则
+    - Implements all abstract methods, satisfying Liskov Substitution Principle
     """
     
     def __init__(self):
         """
         初始化模拟数据提供者
         Initialize mock data provider with sample game data.
+        
+        调用父类构造函数，然后初始化模拟数据。
+        Calls parent class constructor, then initializes mock data.
         """
+        super().__init__()  # 调用父类构造函数 / Call parent class constructor
         self.mock_games: List[GameInfo] = []
         self.games_by_id: Dict[int, GameInfo] = {}
         self._initialize_mock_data()
@@ -194,43 +208,52 @@ class MockDataProvider:
     
     async def get_game_by_id(self, game_id: int) -> Optional[GameInfo]:
         """
-        根据游戏ID获取单个游戏信息
-        Retrieve a single game's information using its Steam game ID.
+        根据游戏ID获取单个游戏信息（实现抽象方法）
+        Retrieve a single game's information using its Steam game ID (implements abstract method).
+        
+        这个方法实现了父类 DataProvider 中定义的抽象方法。
+        This method implements the abstract method defined in parent class DataProvider.
         
         Args:
-            game_id (int): Steam游戏ID
+            game_id (int): Steam game ID
             
         Returns:
-            Optional[GameInfo]: 游戏信息对象，如果未找到则返回None
+            Optional[GameInfo]: Game information object, or None if not found
         """
         return self.games_by_id.get(game_id)
     
     async def get_games_by_ids(self, game_ids: List[int], batch_size: int = 100) -> List[GameInfo]:
         """
-        批量获取多个游戏信息
-        Efficiently retrieve multiple games using a list of Steam game IDs.
+        批量获取多个游戏信息（实现抽象方法）
+        Efficiently retrieve multiple games using a list of Steam game IDs (implements abstract method).
+        
+        这个方法实现了父类 DataProvider 中定义的抽象方法。
+        This method implements the abstract method defined in parent class DataProvider.
         
         Args:
-            game_ids (List[int]): 游戏ID列表
-            batch_size (int): 批处理大小（此处忽略，因为是内存操作）
+            game_ids (List[int]): List of game IDs
+            batch_size (int): Batch size (ignored for in-memory operations)
             
         Returns:
-            List[GameInfo]: 找到的游戏信息列表
+            List[GameInfo]: List of found game information objects
         """
         return [self.games_by_id[game_id] for game_id in game_ids if game_id in self.games_by_id]
     
     async def search_games_by_title(self, title_query: str, limit: int = 10, fuzzy: bool = True) -> List[GameInfo]:
         """
-        根据标题搜索游戏
-        Search games by title with optional fuzzy matching.
+        根据标题搜索游戏（实现抽象方法）
+        Search games by title with optional fuzzy matching (implements abstract method).
+        
+        这个方法实现了父类 DataProvider 中定义的抽象方法。
+        This method implements the abstract method defined in parent class DataProvider.
         
         Args:
-            title_query (str): 标题查询字符串
-            limit (int): 最大结果数量
-            fuzzy (bool): 是否启用模糊匹配
+            title_query (str): Title query string
+            limit (int): Maximum number of results
+            fuzzy (bool): Whether to enable fuzzy matching
             
         Returns:
-            List[GameInfo]: 匹配的游戏列表
+            List[GameInfo]: List of matching games
         """
         if not title_query:
             return []
@@ -258,20 +281,59 @@ class MockDataProvider:
     
     async def get_game_count(self) -> int:
         """
-        获取游戏总数
-        Get the total number of games.
+        获取游戏总数（实现抽象方法）
+        Get the total number of games (implements abstract method).
+        
+        这个方法实现了父类 DataProvider 中定义的抽象方法。
+        This method implements the abstract method defined in parent class DataProvider.
         
         Returns:
-            int: 游戏总数
+            int: Total number of games
         """
         return len(self.mock_games)
     
     def get_all_games(self) -> List[GameInfo]:
         """
-        获取所有游戏数据
-        Get all game data for search indexing.
+        获取所有游戏数据（实现抽象方法）
+        Get all game data for search indexing (implements abstract method).
+        
+        这个方法实现了父类 DataProvider 中定义的抽象方法。
+        This method implements the abstract method defined in parent class DataProvider.
         
         Returns:
-            List[GameInfo]: 所有游戏列表
+            List[GameInfo]: List of all games
         """
         return self.mock_games.copy()
+    
+    async def check_health(self) -> bool:
+        """
+        检查提供者健康状态（重写父类方法）
+        Check provider health status (overrides parent class method).
+        
+        重写父类的 check_health 方法，提供 MockDataProvider 特定的健康检查逻辑。
+        Overrides parent class check_health method, provides MockDataProvider-specific health check logic.
+        
+        这展示了方法重写（method overriding）的使用。
+        This demonstrates the use of method overriding.
+        
+        Returns:
+            bool: Whether the provider is healthy
+        """
+        # 调用父类方法进行基本检查 / Call parent method for basic check
+        basic_health = await super().check_health()
+        
+        # MockDataProvider 特定的额外检查 / MockDataProvider-specific additional checks
+        if not basic_health:
+            return False
+        
+        # 检查数据完整性 / Check data integrity
+        if len(self.mock_games) == 0:
+            logger.warning("MockDataProvider has no games")
+            return False
+        
+        # 检查ID映射一致性 / Check ID mapping consistency
+        if len(self.games_by_id) != len(self.mock_games):
+            logger.warning("MockDataProvider ID mapping inconsistent")
+            return False
+        
+        return True
