@@ -203,9 +203,11 @@ API将在 `http://localhost:8000` 可用，文档位于 `http://localhost:8000/d
 
 ### 🧪 测试 / Testing
 
+#### API 测试 / API Tests
+
 运行完整的API测试套件：
 ```bash
-python3 test_oop_api.py
+python3 tests/test_restructured_api.py
 ```
 
 测试包括：
@@ -213,6 +215,20 @@ python3 test_oop_api.py
 - ✅ 游戏搜索功能（4种不同查询）
 - ✅ 游戏详情获取（4个游戏ID）
 - ✅ 搜索建议功能（4种前缀）
+
+#### 继承和多态测试 / Inheritance and Polymorphism Tests
+
+运行继承和多态的单元测试：
+```bash
+pytest tests/unit/test_inheritance_polymorphism.py -v
+```
+
+测试包括：
+- ✅ 抽象基类测试（不能实例化抽象类）
+- ✅ 继承关系测试（派生类继承自基类）
+- ✅ 多态行为测试（基类引用、运行时多态）
+- ✅ 方法重写测试（check_health 方法重写）
+- ✅ 组合关系测试（GameRepository 包含 DataProvider）
 
 ## 📋 API Endpoints
 
@@ -300,40 +316,162 @@ curl http://localhost:8000/api/v1/games/1
 
 ## 🏗️ 面向对象设计详解 / Object-Oriented Design Details
 
+### 继承层次结构 / Inheritance Hierarchy
+
+项目实现了清晰的继承层次结构，满足 Project 3 的要求：
+
+The project implements a clear inheritance hierarchy, meeting Project 3 requirements:
+
+```
+                    DataProvider (抽象基类 / Abstract Base Class)
+                    - 使用 abc 模块定义抽象接口
+                    - 强制派生类实现所有抽象方法
+                           |
+                           |
+        ┌──────────────────┴──────────────────┐
+        |                                      |
+MockDataProvider                      DatabaseProvider
+(模拟数据提供者)                        (数据库提供者)
+- 实现所有抽象方法                      - 实现所有抽象方法
+- 重写 check_health()                  - 重写 check_health()
+- 调用 super().__init__()              - 调用 super().__init__()
+```
+
+**继承关系特点**:
+- ✅ 基类使用 `ABC` 和 `@abstractmethod` 定义抽象接口
+- ✅ 2个派生类（MockDataProvider, DatabaseProvider）
+- ✅ 派生类实现所有抽象方法
+- ✅ 使用 `super()` 调用父类构造函数
+- ✅ 方法重写（check_health）
+
+### 多态行为 / Polymorphic Behavior
+
+项目在多处展示了多态行为：
+
+The project demonstrates polymorphic behavior in multiple places:
+
+**1. 类型声明多态**:
+```python
+# GameRepository 中使用基类类型引用
+self.provider: DataProvider = MockDataProvider()  # 或 DatabaseProvider()
+```
+
+**2. 运行时多态**:
+```python
+# 根据配置创建不同的派生类实例
+if use_mock_data:
+    self.provider: DataProvider = MockDataProvider()
+else:
+    self.provider: DataProvider = DatabaseProvider()
+
+# 相同的接口调用，不同的实现（多态）
+game = await self.provider.get_game_by_id(1)
+```
+
+**3. 方法重写多态**:
+```python
+# 派生类重写基类方法
+class MockDataProvider(DataProvider):
+    async def check_health(self) -> bool:
+        basic_health = await super().check_health()  # 调用父类方法
+        # 添加派生类特定的验证逻辑
+        return result
+```
+
+### 组合关系 / Composition Relationship
+
+**GameRepository 和 DataProvider 的关系**:
+- **关系类型**: 组合（Composition）
+- **关系描述**: GameRepository "has-a" DataProvider
+- **设计理由**: 
+  - 需要在运行时切换不同的数据源
+  - 保持类的单一职责
+  - 降低耦合度，提高可测试性
+
+```python
+class GameRepository:
+    def __init__(self, use_mock_data: bool = True):
+        # 组合关系：GameRepository 包含 DataProvider 实例
+        if use_mock_data:
+            self.provider: DataProvider = MockDataProvider()
+        else:
+            self.provider: DataProvider = DatabaseProvider()
+```
+
 ### 类图关系 / Class Diagram Relationships
 
 ```
-GameSearchEngine (主控制器)
-├── MockDataProvider (数据提供者)
-├── SearchService (搜索服务)
-├── SecurityManager (安全管理)
-└── HealthMonitor (健康监控)
-
-GameInfo (数据模型)
-└── 被所有服务类使用
+                    DataProvider (抽象基类)
+                           |
+        ┌──────────────────┴──────────────────┐
+        |                                      |
+MockDataProvider                      DatabaseProvider
+        │                                      │
+        └──────────────────┬───────────────────┘
+                           │ (组合 / Composition)
+                    ┌───────────────┐
+                    │GameRepository │
+                    │ - provider    │
+                    │   : DataProvider│
+                    └───────────────┘
+                           │
+        ┌──────────────────┴──────────────────┐
+        |                                      |
+SearchService                          GameSearchEngine
+(搜索服务)                            (主控制器)
 ```
 
 ### 设计模式应用 / Design Patterns Applied
 
-1. **控制器模式 (Controller Pattern)**
-   - `GameSearchEngine` 作为主控制器
-   - 协调各个服务组件的交互
+1. **抽象工厂模式 (Abstract Factory Pattern)**
+   - `DataProvider` 作为抽象工厂
+   - `MockDataProvider` 和 `DatabaseProvider` 作为具体工厂
 
-2. **提供者模式 (Provider Pattern)**
-   - `MockDataProvider` 提供数据访问抽象
-   - 可轻松替换为真实数据库实现
+2. **策略模式 (Strategy Pattern)**
+   - `DataProvider` 定义策略接口
+   - `MockDataProvider` 和 `DatabaseProvider` 是具体策略
+   - `GameRepository` 使用策略
 
-3. **服务模式 (Service Pattern)**
-   - `SearchService` 封装搜索逻辑
-   - `SecurityManager` 封装安全功能
-   - `HealthMonitor` 封装监控功能
+3. **模板方法模式 (Template Method Pattern)**
+   - `DataProvider.check_health()` 定义算法骨架
+   - 派生类可以重写特定步骤
+
+4. **仓库模式 (Repository Pattern)**
+   - `GameRepository` 抽象数据访问逻辑
+   - 隐藏数据源的实现细节
 
 ### OOP原则体现 / OOP Principles Demonstrated
 
 - **封装 (Encapsulation)**: 每个类都有明确的职责边界
-- **继承 (Inheritance)**: GameInfo继承自基础数据类
-- **多态 (Polymorphism)**: 搜索算法的不同实现
-- **抽象 (Abstraction)**: 通过接口隐藏实现细节
+- **继承 (Inheritance)**: DataProvider → MockDataProvider, DatabaseProvider
+- **多态 (Polymorphism)**: 基类引用、运行时多态、方法重写
+- **抽象 (Abstraction)**: 使用抽象基类定义接口契约
+- **组合 (Composition)**: GameRepository 包含 DataProvider 实例
+
+### Project 3 要求满足情况 / Project 3 Requirements Status
+
+✅ **继承层次 (Inheritance Hierarchy)**
+- 基类：DataProvider（抽象基类）
+- 派生类：MockDataProvider, DatabaseProvider（2个派生类）
+- 方法重写：check_health() 方法
+- 使用 super() 调用父类构造函数
+
+✅ **抽象基类 (Abstract Base Classes)**
+- 使用 `abc` 模块：`from abc import ABC, abstractmethod`
+- 定义抽象方法：5个抽象方法
+- 强制实现：不能实例化未实现所有抽象方法的类
+
+✅ **多态 (Polymorphism)**
+- 基类类型引用：`provider: DataProvider`
+- 运行时多态：根据配置创建不同的派生类实例
+- 方法重写：派生类重写 check_health() 方法
+
+✅ **组合 (Composition)**
+- GameRepository "has-a" DataProvider
+- 运行时可以切换不同的提供者
+- 文档说明了选择组合而非继承的理由
+
+📚 **详细文档**: 参见 `docs/ARCHITECTURE_OOP.md`
 
 ### 文件结构 / File Structure
 
@@ -352,6 +490,23 @@ backend-INST326-steam-search/
 ```
 
 ## 更新日志 / Changelog
+
+### 2024-12-XX - Project 3: 继承、多态和组合实现
+
+🚀 **重大更新 - 高级OOP特性实现**:
+- ✅ 实现继承层次结构（DataProvider → MockDataProvider, DatabaseProvider）
+- ✅ 使用抽象基类（ABC模块）强制接口实现
+- ✅ 实现多态行为（基类引用、运行时多态、方法重写）
+- ✅ 实现组合关系（GameRepository 包含 DataProvider）
+- ✅ 添加全面的继承和多态测试
+- ✅ 创建详细的架构文档（ARCHITECTURE_OOP.md）
+
+🏗️ **架构改进**:
+- 创建抽象基类 DataProvider 定义统一接口
+- 重构 MockDataProvider 和 DatabaseProvider 继承基类
+- 更新 GameRepository 使用多态（基类类型引用）
+- 实现方法重写（check_health 方法）
+- 使用 super() 调用父类构造函数
 
 ### 2024-11-02 - 面向对象架构重构
 

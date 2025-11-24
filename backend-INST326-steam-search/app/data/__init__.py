@@ -8,6 +8,7 @@ This module contains all data-related components including models, providers, an
 
 from .models import GameInfo, SearchResult
 from .repositories.game_repository import GameRepository, get_game_repository
+from .providers.base import DataProvider
 from .providers.mock import MockDataProvider
 from .providers.database import DatabaseProvider
 
@@ -16,6 +17,7 @@ __all__ = [
     'SearchResult',
     'GameRepository',
     'get_game_repository',
+    'DataProvider',
     'MockDataProvider',
     'DatabaseProvider'
 ]
