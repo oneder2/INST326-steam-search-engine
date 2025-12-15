@@ -13,6 +13,32 @@ Steam Game Search Engine provides an intelligent interface for discovering Steam
 
 **Course**: INST326 - Object-Oriented Programming | University of Maryland | Fall 2024
 
+## 👥 Team Members
+
+**Team:** INST326 Project Team  
+**Project:** Steam Game Search Engine (Project 4)
+
+### Individual Contributions
+
+**Development:**
+- Backend architecture and API implementation
+- Search service with multi-field search and weighted relevance scoring
+- Data persistence service (save/load, import/export)
+- Frontend-backend integration
+- Comprehensive testing suite (20 automated tests)
+
+**Documentation:**
+- Technical documentation and architecture guides
+- API documentation (Swagger/OpenAPI)
+- Testing strategy and test documentation
+- User guides and setup instructions
+
+**Quality Assurance:**
+- Unit testing (7 tests)
+- Integration testing (8 tests)
+- System testing (5 tests)
+- Manual testing and bug fixes
+
 ## 📊 Project Status
 
 ✅ **Phase 2 Complete** | 🚧 **Phase 3 Planned**
@@ -241,13 +267,67 @@ npm test                              # Run tests
 
 ---
 
+## 🧪 Running Tests
+
+### Comprehensive Test Suite
+
+Our project includes **20 automated tests** covering unit, integration, and system testing:
+
+```bash
+cd backend
+
+# Run all tests
+python -m unittest discover tests
+
+# Run with verbose output
+python -m unittest discover tests -v
+
+# Run specific test suite
+python -m unittest discover tests/unit          # Unit tests (7 tests)
+python -m unittest discover tests/integration   # Integration tests (8 tests)
+python -m unittest discover tests/system        # System tests (5 tests)
+
+# Run single test file
+python -m unittest tests.unit.test_persistence
+python -m unittest tests.integration.test_search_workflows
+python -m unittest tests.system.test_complete_workflows
+```
+
+### Test Coverage
+
+- **Unit Tests (7)**: Test individual methods (PersistenceService, file I/O)
+- **Integration Tests (8)**: Test component interactions (search workflows, filters, pagination)
+- **System Tests (5)**: Test complete user workflows (search journey, session persistence, import/export)
+
+**Test Documentation:** See `docs/TESTING_STRATEGY.md` for detailed testing strategy and rationale.
+
+---
+
 ## 📚 Documentation
 
+### Core Documentation
 - **Backend README**: `backend/README.md`
 - **Backend Startup Guide**: `docs/tech-doc/BACKEND_STARTUP_GUIDE.md`
 - **Frontend Development**: `frontend-INST326-steam-search/DEVELOPMENT.md`
 - **API Contract**: `docs/tech-doc/API-contract-backend.md`
-- **Technical Docs**: `docs/tech-doc/`
+
+### Testing Documentation (Project 4)
+- **Testing Strategy**: `docs/TESTING_STRATEGY.md` - Complete testing approach and coverage
+- **Integration Tests**: `backend/tests/integration/` - 8 tests verifying component coordination
+- **System Tests**: `backend/tests/system/` - 5 tests verifying complete workflows
+
+### Project 4 Requirements
+- **Requirements Gap Analysis**: `docs/PROJECT_REQUIREMENTS_GAP_ANALYSIS.md`
+- **Data Persistence**: Implemented in `backend/app/services/persistence_service.py`
+  - Save/load search history
+  - Import from CSV/JSON
+  - Export to CSV/JSON
+  - File I/O with pathlib and context managers
+  
+### Technical Documentation
+- **Search Implementation**: `docs/SEARCH_IMPLEMENTATION_PLAN.md`
+- **Phase 1 & 2 Complete**: `docs/PHASE1_SEARCH_COMPLETE.md`, `docs/PHASE2_IMPLEMENTATION_COMPLETE.md`
+- **All Technical Docs**: `docs/tech-doc/`
 
 ---
 

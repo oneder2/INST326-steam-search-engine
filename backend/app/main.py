@@ -30,7 +30,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 from app.config import settings
 from app.database import db
-from app.api.v1 import games, health, search
+from app.api.v1 import games, health, search, export
 import logging
 
 # ============================================================================
@@ -174,6 +174,12 @@ app.include_router(
     search.router,
     prefix="/api/v1",
     tags=["Search"]
+)
+
+app.include_router(
+    export.router,
+    prefix="/api/v1",
+    tags=["Export"]
 )
 
 logger.info("✅ API routers registered")
