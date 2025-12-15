@@ -118,6 +118,12 @@ export interface SearchFilters {
   coop_type?: CoopType;
   /** Platform compatibility filter */
   platform?: Platform[];
+  /** Steam Deck compatibility filter */
+  deck_compatible?: boolean;
+  /** Genre filter */
+  genres?: string[];
+  /** Review status filter */
+  review_status?: string;
 }
 
 /**

@@ -1,0 +1,76 @@
+# ============================================================================
+# Steam Game Search Engine - Backend Dependencies
+# ============================================================================
+# This file lists all Python packages required for the backend API.
+#
+# Installation:
+#   pip install -r requirements.txt
+#
+# For production deployment with minimal dependencies:
+#   pip install -r requirements-core.txt (if available)
+#
+# ============================================================================
+
+# FastAPI Framework
+# High-performance web framework for building APIs
+fastapi==0.104.1
+
+# ASGI Server
+# Production-ready server for FastAPI
+uvicorn[standard]==0.24.0
+
+# Data Validation
+# Pydantic v2 for data validation and settings management
+pydantic==2.5.0
+pydantic-settings==2.1.0
+
+# Database - Supabase
+# Official Supabase Python client (includes postgrest)
+# Version 2.25+ required for new-style API keys (sb_secret_*, sb_publishable_*)
+supabase>=2.25.0
+postgrest>=2.25.0
+websockets>=15.0
+
+# Environment Variables
+# Load environment variables from .env file
+python-dotenv==1.0.0
+
+# File Upload Support
+# Required for multipart form data handling
+python-multipart==0.0.6
+
+# HTTP Client
+# For making HTTP requests (if needed for external APIs)
+# Note: Version constrained by supabase dependency
+httpx<0.25.0,>=0.24.0
+
+# Date/Time Utilities
+# Enhanced date and time handling
+python-dateutil==2.8.2
+
+# ============================================================================
+# Development Dependencies (Optional)
+# ============================================================================
+# Uncomment these for development environment
+
+# Testing
+# pytest==7.4.3
+# pytest-asyncio==0.21.1
+# pytest-cov==4.1.0
+
+# Code Quality
+# black==23.11.0
+# flake8==6.1.0
+# mypy==1.7.1
+
+# ============================================================================
+# Production Notes
+# ============================================================================
+# For production deployment:
+# 1. Use exact version pinning (==) to ensure reproducibility
+# 2. Consider using pip-tools or poetry for dependency management
+# 3. Regularly update dependencies for security patches
+# 4. Run security audit: pip-audit (install with: pip install pip-audit)
+#
+# ============================================================================
+
