@@ -8,6 +8,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { UI_CONFIG, SEARCH_LIMITS } from '@/constants/api';
+import { getSearchSuggestions } from '@/services/api';
 
 interface SearchBoxProps {
   /** Current search value */
@@ -108,20 +109,9 @@ export default function SearchBox({
       if (query.trim().length >= SEARCH_LIMITS.MIN_QUERY_LENGTH) {
         setIsLoading(true);
         try {
-          // TODO: Implement actual API call for suggestions
-          // const response = await getSearchSuggestions(query);
-          // setSuggestions(response.data.suggestions);
-          
-          // Mock suggestions for now
-          const mockSuggestions = [
-            `${query} games`,
-            `games like ${query}`,
-            `${query} indie`,
-            `${query} multiplayer`,
-            `${query} steam deck`,
-          ].filter(suggestion => suggestion !== query);
-          
-          setSuggestions(mockSuggestions.slice(0, 5));
+          // 调用真实API获取搜索建议 / Call real API for search suggestions
+          const response = await getSearchSuggestions(query);
+          setSuggestions(response.data.suggestions);
           setShowSuggestionsList(true);
         } catch (error) {
           console.error('Failed to fetch suggestions:', error);

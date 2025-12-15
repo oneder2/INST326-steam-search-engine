@@ -61,8 +61,17 @@ const nextConfig = {
   
   // Webpack configuration for custom module resolution
   webpack: (config, { buildId, dev, isServer, defaultLoaders, webpack }) => {
-    // Custom webpack configurations can be added here
-    // For example, handling markdown files or other custom file types
+    // Fix for "module is not defined" error in browser
+    // Prevent webpack from injecting Node.js globals into browser code
+    if (!isServer) {
+      config.resolve.fallback = {
+        ...config.resolve.fallback,
+        fs: false,
+        net: false,
+        tls: false,
+        module: false,
+      };
+    }
     
     return config;
   },

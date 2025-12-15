@@ -91,6 +91,7 @@ export default function SearchFilters({
         <h3 className="text-lg font-semibold text-white">Filters</h3>
         {hasActiveFilters && (
           <button
+            type="button"
             onClick={clearAllFilters}
             disabled={disabled}
             className="text-sm text-steam-green hover:text-steam-green-light disabled:opacity-50"
@@ -170,8 +171,8 @@ export default function SearchFilters({
           <label className="flex items-center">
             <input
               type="checkbox"
-              checked={filters.platform?.includes(Platform.STEAM_DECK) || false}
-              onChange={(e) => handlePlatformChange(Platform.STEAM_DECK, e.target.checked)}
+              checked={filters.deck_compatible || false}
+              onChange={(e) => updateFilter('deck_compatible', e.target.checked || undefined)}
               disabled={disabled}
               className="mr-2 text-steam-green focus:ring-steam-green rounded"
             />
@@ -224,6 +225,11 @@ export default function SearchFilters({
                 Platforms: {filters.platform.map(p => 
                   PLATFORMS.find(pl => pl.value === p)?.label
                 ).join(', ')}
+              </div>
+            )}
+            {filters.deck_compatible && (
+              <div className="text-xs text-gray-300">
+                Steam Deck Compatible
               </div>
             )}
           </div>

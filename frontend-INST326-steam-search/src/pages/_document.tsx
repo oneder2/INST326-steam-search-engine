@@ -25,14 +25,7 @@ export default function Document() {
         <link rel="dns-prefetch" href="//fonts.googleapis.com" />
         <link rel="dns-prefetch" href="//fonts.gstatic.com" />
         
-        {/* Preload critical resources */}
-        <link
-          rel="preload"
-          href="/fonts/inter-var.woff2"
-          as="font"
-          type="font/woff2"
-          crossOrigin="anonymous"
-        />
+        {/* Preload critical resources - Removed to prevent 404 errors if font not present */}
         
         {/* Critical CSS for above-the-fold content */}
         <style
@@ -167,8 +160,8 @@ export default function Document() {
                 console.log('%cDevelopment Build', styles.subtitle);
                 console.log('%cINST326 Group Project - University of Maryland', styles.info);
                 
-                // Hot reload notification
-                if (module.hot) {
+                // Hot reload notification (check if HMR is available)
+                if (typeof window !== 'undefined' && window.__NEXT_DATA__) {
                   console.log('%c🔥 Hot reload enabled', 'color: #ff6600; font-size: 12px;');
                 }
               `,
