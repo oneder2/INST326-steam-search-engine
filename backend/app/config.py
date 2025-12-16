@@ -91,6 +91,19 @@ class Settings(BaseSettings):
     """Logging level (DEBUG/INFO/WARNING/ERROR/CRITICAL)"""
     
     # ========================================================================
+    # Search Configuration (BM25)
+    # ========================================================================
+    
+    BM25_ENABLED: bool = True
+    """Enable BM25 ranking algorithm for search relevance"""
+    
+    BM25_NAME_WEIGHT: float = 2.0
+    """Weight for game name field in BM25 scoring"""
+    
+    BM25_DESCRIPTION_WEIGHT: float = 1.0
+    """Weight for game description field in BM25 scoring"""
+    
+    # ========================================================================
     # Configuration Class
     # ========================================================================
     

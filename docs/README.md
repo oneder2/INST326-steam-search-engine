@@ -27,6 +27,10 @@ Complete documentation guide for Steam Game Search Engine project.
    - Deployment procedures
    - Monitoring and maintenance
 
+### Search & Ranking
+
+- **[BM25 Implementation](BM25_IMPLEMENTATION.md)** - BM25 ranking algorithm guide (Phase 3)
+
 ### Testing Documentation
 
 - **[Testing Strategy](TESTING_STRATEGY.md)** - Unit, integration, and system testing approach

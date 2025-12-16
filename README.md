@@ -2,6 +2,8 @@
 
 A modern game discovery platform built with Next.js and FastAPI, powered by Supabase PostgreSQL database.
 
+presentation video link:
+
 ## 🎮 Project Overview
 
 Steam Game Search Engine provides an intelligent interface for discovering Steam games through:
@@ -41,7 +43,7 @@ Steam Game Search Engine provides an intelligent interface for discovering Steam
 
 ## 📊 Project Status
 
-✅ **Phase 2 Complete** | 🚧 **Phase 3 Planned**
+✅ **Phase 3 Complete** | 🚧 **Phase 4 Planned**
 
 **Completed:**
 - ✅ Backend API with Supabase integration
@@ -50,12 +52,14 @@ Steam Game Search Engine provides an intelligent interface for discovering Steam
 - ✅ Text search (multi-field: name + description)
 - ✅ Advanced filtering (price, genre, type)
 - ✅ Sorting options (7 types)
+- ✅ **BM25 ranking algorithm** (Phase 3 - NEW!)
 - ✅ Weighted relevance scoring
+- ✅ Search preset save/load
 - ✅ Responsive UI with Steam theme
+- ✅ Comprehensive testing (20 tests)
 
 **Next Phase:**
-- 📋 BM25 ranking algorithm (Phase 3)
-- 📋 Search suggestions (Phase 3)
+- 📋 Search suggestions (Phase 4)
 - 📋 Semantic search with embeddings (Phase 4 - optional)
 
 ---

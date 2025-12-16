@@ -48,6 +48,10 @@ httpx<0.25.0,>=0.24.0
 # Enhanced date and time handling
 python-dateutil==2.8.2
 
+# BM25 Ranking Algorithm
+# For text relevance scoring and ranking
+rank-bm25==0.2.2
+
 # ============================================================================
 # Development Dependencies (Optional)
 # ============================================================================

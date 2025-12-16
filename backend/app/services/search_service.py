@@ -6,9 +6,9 @@ text queries and filters. It handles database queries, filtering,
 sorting, and result transformation.
 
 Implementation Phases:
-- Phase 1 (Current): Basic ILIKE search on name field with filters
-- Phase 2 (Future): Multi-field search with weighting
-- Phase 3 (Future): BM25 ranking algorithm
+- Phase 1 (Complete): Basic ILIKE search on name field with filters
+- Phase 2 (Complete): Multi-field search with weighting
+- Phase 3 (Current): BM25 ranking algorithm
 - Phase 4 (Future): Semantic search with embeddings
 """
 
@@ -17,6 +17,8 @@ from supabase import Client
 import logging
 from app.config import settings
 from app.models.search import SearchFilters, SortBy
+from rank_bm25 import BM25Okapi
+import re
 
 logger = logging.getLogger(__name__)
 
@@ -27,12 +29,12 @@ class SearchService:
     
     This service handles:
     - Text search in game names (Phase 1) and descriptions (Phase 2+)
+    - BM25 ranking for relevance scoring (Phase 3)
     - Filtering by price, genre, category, type, date, reviews
     - Sorting by relevance, price, reviews, date, name
     - Pagination of results
     
-    TODO Phase 2: Add multi-field search with weighting
-    TODO Phase 3: Implement BM25 ranking
+    Phase 3: BM25 ranking algorithm integrated
     TODO Phase 4: Add semantic search with embeddings
     """
     
@@ -44,6 +46,25 @@ class SearchService:
             db_client: Supabase client instance
         """
         self.db = db_client
+        self._bm25_cache = {}  # Cache for BM25 models
+    
+    def _tokenize(self, text: str) -> List[str]:
+        """
+        Tokenize text for BM25 processing
+        
+        Converts text to lowercase and splits on non-alphanumeric characters.
+        
+        Args:
+            text: Text to tokenize
+        
+        Returns:
+            List of tokens
+        """
+        if not text:
+            return []
+        # Convert to lowercase and split on non-alphanumeric characters
+        tokens = re.findall(r'\w+', text.lower())
+        return tokens
     
     async def search(
         self,
@@ -220,9 +241,11 @@ class SearchService:
             # ===================================================================
             results = []
             for game in result.data:
-                # Calculate relevance score
-                # Phase 2: Multi-field scoring with weights
-                relevance_score = self._calculate_relevance_score_v2(game, query)
+                # Calculate relevance scores
+                # Phase 3: Use BM25 for better relevance scoring
+                bm25_score = self._calculate_bm25_score(game, query)
+                # Keep v2 score for comparison/fallback
+                simple_score = self._calculate_relevance_score_v2(game, query)
                 
                 # Transform to SearchResultItem format
                 results.append({
@@ -235,8 +258,17 @@ class SearchService:
                     'type': game['type'],
                     'release_date': game['release_date'],
                     'total_reviews': game['total_reviews'],
-                    'relevance_score': relevance_score
+                    'relevance_score': simple_score,  # Keep for backward compatibility
+                    'bm25_score': bm25_score  # New BM25 score
                 })
+            
+            # ===================================================================
+            # POST-PROCESSING: Sort by BM25 score if relevance sort
+            # ===================================================================
+            if sort_by == SortBy.RELEVANCE and query.strip():
+                # Sort results by BM25 score (descending)
+                results.sort(key=lambda x: x['bm25_score'], reverse=True)
+                logger.debug(f"Sorted {len(results)} results by BM25 score")
             
             # Return response
             return {
@@ -252,6 +284,63 @@ class SearchService:
         except Exception as e:
             logger.error(f"❌ Search failed: {e}", exc_info=True)
             raise
+    
+    def _calculate_bm25_score(self, game: Dict[str, Any], query: str) -> float:
+        """
+        Calculate BM25 relevance score for a game (Phase 3)
+        
+        BM25 (Best Matching 25) is a probabilistic ranking function used in
+        information retrieval. It calculates relevance based on term frequency
+        and inverse document frequency.
+        
+        This implementation:
+        - Tokenizes query and document text
+        - Calculates BM25 score for name field (weight: 2.0)
+        - Calculates BM25 score for description field (weight: 1.0)
+        - Combines scores with field weighting
+        
+        Args:
+            game: Game data dictionary
+            query: Search query
+        
+        Returns:
+            BM25 relevance score (higher is more relevant)
+        """
+        if not query.strip():
+            return 0.0
+        
+        # Tokenize query
+        query_tokens = self._tokenize(query)
+        if not query_tokens:
+            return 0.0
+        
+        total_score = 0.0
+        
+        # ===================================================================
+        # NAME FIELD (Weight: 2.0 - highest priority)
+        # ===================================================================
+        name = game.get('name', '')
+        if name:
+            name_tokens = self._tokenize(name)
+            if name_tokens:
+                # Create BM25 model for this single document
+                bm25_name = BM25Okapi([name_tokens])
+                name_score = bm25_name.get_scores(query_tokens)[0]
+                total_score += name_score * 2.0
+        
+        # ===================================================================
+        # DESCRIPTION FIELD (Weight: 1.0)
+        # ===================================================================
+        description = game.get('short_description', '')
+        if description:
+            desc_tokens = self._tokenize(description)
+            if desc_tokens:
+                # Create BM25 model for this single document
+                bm25_desc = BM25Okapi([desc_tokens])
+                desc_score = bm25_desc.get_scores(query_tokens)[0]
+                total_score += desc_score * 1.0
+        
+        return round(total_score, 4)
     
     def _calculate_relevance_score_v2(self, game: Dict[str, Any], query: str) -> float:
         """
