@@ -76,7 +76,7 @@ class TestSearchIntegration(unittest.TestCase):
             SortBy.RELEVANCE,
             SortBy.PRICE_ASC,
             SortBy.PRICE_DESC,
-            SortBy.RELEASE_DATE_DESC
+            SortBy.NEWEST  # NEWEST sorts by release date descending
         ]
         
         for sort_by in sort_options:

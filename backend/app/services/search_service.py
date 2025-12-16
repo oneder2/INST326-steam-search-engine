@@ -8,8 +8,8 @@ sorting, and result transformation.
 Implementation Phases:
 - Phase 1 (Complete): Basic ILIKE search on name field with filters
 - Phase 2 (Complete): Multi-field search with weighting
-- Phase 3 (Current): BM25 ranking algorithm
-- Phase 4 (Future): Semantic search with embeddings
+- Phase 3 (Complete): BM25 ranking algorithm
+- Phase 4 (Complete): Semantic search with pgvector
 """
 
 from typing import Dict, Any, Optional, List
@@ -18,7 +18,11 @@ import logging
 from app.config import settings
 from app.models.search import SearchFilters, SortBy
 from rank_bm25 import BM25Okapi
+from app.services.embedding_service import EmbeddingService
+from fastapi import HTTPException
 import re
+import numpy as np
+import json
 
 logger = logging.getLogger(__name__)
 
@@ -144,12 +148,13 @@ class SearchService:
                 # Genre filters (JSONB containment - must have ALL selected genres)
                 # Uses PostgreSQL's @> operator for JSONB containment
                 # Note: Supabase expects JSON string format
+                # Multiple .contains() calls create AND logic (must have all genres)
                 if filters.genres:
                     import json
                     for genre in filters.genres:
                         # Convert to JSON string format
                         query_builder = query_builder.contains('genres', json.dumps([genre]))
-                    logger.debug(f"Applied filter: genres contains {filters.genres}")
+                    logger.debug(f"Applied filter: genres contains ALL of {filters.genres} (AND logic)")
                 
                 # Category filters (JSONB containment)
                 if filters.categories:
@@ -434,6 +439,462 @@ class SearchService:
         normalized_score = total_score / max_possible_score
         
         return round(normalized_score, 2)
+    
+    # ========================================================================
+    # PHASE 4: Semantic Search with pgvector
+    # ========================================================================
+    
+    async def semantic_search(
+        self,
+        query: str,
+        filters: Optional[SearchFilters] = None,
+        limit: int = 20,
+        offset: int = 0,
+        min_similarity: float = 0.0
+    ) -> Dict[str, Any]:
+        """
+        Semantic search using pgvector embeddings
+        
+        This method uses vector similarity (cosine similarity) to find
+        games that are semantically similar to the query, even if they
+        don't contain the exact words.
+        
+        Args:
+            query: Search query text
+            filters: Optional filters (price, genres, type, etc.)
+            limit: Number of results to return
+            offset: Pagination offset
+            min_similarity: Minimum similarity threshold (0.0-1.0)
+        
+        Returns:
+            Dictionary with results and metadata
+        
+        Example:
+            results = await search_service.semantic_search(
+                query="space exploration game",
+                filters=SearchFilters(price_max=5000),
+                limit=20
+            )
+        """
+        logger.info(f"Semantic search: query='{query}', limit={limit}")
+        
+        try:
+            # Generate query embedding
+            query_embedding = EmbeddingService.encode_query(query)
+            logger.debug(f"Generated query embedding (dim: {len(query_embedding)})")
+            
+            # Build RPC parameters
+            params = {
+                'query_embedding': query_embedding,
+                'match_limit': limit,
+                'match_offset': offset,
+                'min_similarity': min_similarity
+            }
+            
+            # Add filters if provided
+            if filters:
+                if filters.price_max:
+                    params['price_max'] = filters.price_max
+                if filters.genres:
+                    params['genres_filter'] = filters.genres
+                if filters.type:
+                    params['type_filter'] = filters.type
+            
+            # Call PostgreSQL function with schema prefix
+            # IMPORTANT: Use schema() to specify the correct schema (steam, not public)
+            logger.debug(f"Calling steam.search_games_semantic with params: {list(params.keys())}")
+            try:
+                result = self.db.schema(settings.DATABASE_SCHEMA).rpc('search_games_semantic', params).execute()
+            except Exception as e:
+                # If function doesn't exist, use Python-side semantic search as fallback
+                error_msg = str(e)
+                if 'Could not find the function' in error_msg or 'PGRST202' in error_msg:
+                    logger.warning("⚠️  PostgreSQL function 'steam.search_games_semantic' not found!")
+                    logger.warning("   Using Python-side semantic search fallback.")
+                    logger.warning("   For better performance, create the function in Supabase SQL Editor.")
+                    logger.warning("   See: CREATE_FUNCTIONS_IN_SUPABASE.md")
+                    
+                    # Use Python-side semantic search
+                    return await self._python_semantic_search(query, filters, limit, offset, min_similarity)
+                raise
+            
+            if not result.data:
+                logger.info("No semantic search results found")
+                return {
+                    'results': [],
+                    'total': 0,
+                    'offset': offset,
+                    'limit': limit,
+                    'query': query,
+                    'search_type': 'semantic',
+                    'sort_by': SortBy.RELEVANCE,  # Semantic search always sorts by similarity
+                    'filters_applied': filters.dict() if filters else None
+                }
+            
+            # Transform results
+            results = []
+            for game in result.data:
+                results.append({
+                    'game_id': game['appid'],
+                    'title': game['name'],
+                    'description': game.get('short_description', ''),
+                    'price': round(game['price_cents'] / 100, 2) if game['price_cents'] else 0.0,
+                    'genres': game.get('genres', []),
+                    'categories': game.get('categories', []),
+                    'type': game.get('type'),
+                    'release_date': game.get('release_date'),
+                    'total_reviews': game.get('total_reviews'),
+                    'similarity_score': round(game['similarity'], 4),
+                    'relevance_score': round(game['similarity'], 4)  # For compatibility
+                })
+            
+            logger.info(f"✓ Semantic search returned {len(results)} results")
+            
+            return {
+                'results': results,
+                'total': len(results),  # TODO: Get actual total count
+                'offset': offset,
+                'limit': limit,
+                'query': query,
+                'search_type': 'semantic',
+                'sort_by': SortBy.RELEVANCE,  # Semantic search always sorts by similarity
+                'filters_applied': filters.dict() if filters else None
+            }
+            
+        except Exception as e:
+            logger.error(f"❌ Semantic search failed: {e}", exc_info=True)
+            raise
+    
+    async def hybrid_search(
+        self,
+        query: str,
+        filters: Optional[SearchFilters] = None,
+        sort_by: SortBy = SortBy.RELEVANCE,
+        limit: int = 20,
+        offset: int = 0,
+        alpha: float = 0.5
+    ) -> Dict[str, Any]:
+        """
+        Hybrid search combining BM25 and semantic search
+        
+        Uses Reciprocal Rank Fusion (RRF) to combine results from:
+        - BM25 lexical matching (keyword-based)
+        - Vector semantic similarity (meaning-based)
+        
+        Args:
+            query: Search query text
+            filters: Optional filters
+            sort_by: Sort method (only RELEVANCE uses hybrid)
+            limit: Number of results to return
+            offset: Pagination offset
+            alpha: Fusion weight (0.0=pure semantic, 1.0=pure BM25, 0.5=balanced)
+        
+        Returns:
+            Dictionary with fused results and metadata
+        
+        Example:
+            results = await search_service.hybrid_search(
+                query="action shooter",
+                alpha=0.5,  # 50% BM25 + 50% semantic
+                limit=20
+            )
+        """
+        logger.info(f"Hybrid search: query='{query}', alpha={alpha}")
+        
+        # For non-relevance sorts or empty query, fall back to regular search
+        if sort_by != SortBy.RELEVANCE or not query.strip():
+            logger.debug("Falling back to regular search (non-relevance sort or empty query)")
+            return await self.search(query, filters, sort_by, offset, limit)
+        
+        try:
+            # Fetch more results for fusion (to improve quality)
+            fetch_limit = min(200, limit * 10)
+            
+            # 1. BM25 Search
+            logger.debug(f"Running BM25 search (limit: {fetch_limit})")
+            bm25_results = await self.search(
+                query, filters, SortBy.RELEVANCE, 0, fetch_limit
+            )
+            
+            # 2. Semantic Search (with fallback handling)
+            logger.debug(f"Running semantic search (limit: {fetch_limit})")
+            try:
+                semantic_results = await self.semantic_search(
+                    query, filters, fetch_limit, 0
+                )
+                # Check if semantic search fell back to BM25
+                if semantic_results.get('search_type') == 'semantic_fallback_bm25':
+                    logger.warning("Semantic search unavailable, using BM25-only hybrid search")
+                    # If semantic search fell back, just return BM25 results
+                    return {
+                        'results': bm25_results['results'][:limit],
+                        'total': bm25_results['total'],
+                        'offset': offset,
+                        'limit': limit,
+                        'query': query,
+                        'search_type': 'hybrid_fallback_bm25',
+                        'sort_by': sort_by,
+                        'alpha': alpha,
+                        'fallback_reason': 'Semantic search function not available',
+                        'filters_applied': filters.dict() if filters else None
+                    }
+            except Exception as e:
+                logger.warning(f"Semantic search failed: {e}")
+                logger.warning("Falling back to BM25-only hybrid search")
+                # Return BM25 results only
+                return {
+                    'results': bm25_results['results'][:limit],
+                    'total': bm25_results['total'],
+                    'offset': offset,
+                    'limit': limit,
+                    'query': query,
+                    'search_type': 'hybrid_fallback_bm25',
+                    'sort_by': sort_by,
+                    'alpha': alpha,
+                    'fallback_reason': f'Semantic search error: {str(e)}',
+                    'filters_applied': filters.dict() if filters else None
+                }
+            
+            # 3. Reciprocal Rank Fusion
+            logger.debug("Performing reciprocal rank fusion")
+            fused_results = self._reciprocal_rank_fusion(
+                bm25_results['results'],
+                semantic_results['results'],
+                alpha
+            )
+            
+            # 4. Apply pagination
+            paginated = fused_results[offset:offset + limit]
+            
+            logger.info(f"✓ Hybrid search returned {len(paginated)} results (from {len(fused_results)} fused)")
+            
+            return {
+                'results': paginated,
+                'total': len(fused_results),
+                'offset': offset,
+                'limit': limit,
+                'query': query,
+                'search_type': 'hybrid',
+                'sort_by': sort_by,  # Use the provided sort_by parameter
+                'alpha': alpha,
+                'filters_applied': filters.dict() if filters else None
+            }
+            
+        except Exception as e:
+            logger.error(f"❌ Hybrid search failed: {e}", exc_info=True)
+            raise
+    
+    def _reciprocal_rank_fusion(
+        self,
+        bm25_results: List[Dict],
+        semantic_results: List[Dict],
+        alpha: float,
+        k: int = 60
+    ) -> List[Dict]:
+        """
+        Reciprocal Rank Fusion for hybrid search
+        
+        RRF is a simple but effective method for combining ranked lists.
+        It doesn't require score normalization and is robust to score scale differences.
+        
+        Formula:
+            RRF_score(d) = 1 / (k + rank(d))
+            Final_score(d) = alpha * RRF_bm25(d) + (1-alpha) * RRF_semantic(d)
+        
+        Args:
+            bm25_results: Results from BM25 search
+            semantic_results: Results from semantic search
+            alpha: Weight for BM25 (0.0-1.0)
+            k: Constant to prevent division by zero (default: 60)
+        
+        Returns:
+            List of results sorted by fused score
+        """
+        scores = {}
+        game_data = {}
+        
+        # BM25 scores (keyword matching)
+        for rank, result in enumerate(bm25_results, start=1):
+            game_id = result['game_id']
+            rrf_score = 1.0 / (k + rank)
+            scores[game_id] = alpha * rrf_score
+            game_data[game_id] = result
+        
+        # Semantic scores (meaning matching)
+        for rank, result in enumerate(semantic_results, start=1):
+            game_id = result['game_id']
+            rrf_score = 1.0 / (k + rank)
+            
+            if game_id in scores:
+                scores[game_id] += (1 - alpha) * rrf_score
+            else:
+                scores[game_id] = (1 - alpha) * rrf_score
+                game_data[game_id] = result
+        
+        # Sort by fused score
+        sorted_ids = sorted(scores.keys(), key=lambda x: scores[x], reverse=True)
+        
+        # Build result list with fusion scores
+        results = []
+        for game_id in sorted_ids:
+            result = game_data[game_id].copy()
+            result['fusion_score'] = round(scores[game_id], 6)
+            result['relevance_score'] = round(scores[game_id], 6)  # For compatibility
+            results.append(result)
+        
+        return results
+    
+    async def _python_semantic_search(
+        self,
+        query: str,
+        filters: Optional[SearchFilters],
+        limit: int,
+        offset: int,
+        min_similarity: float
+    ) -> Dict[str, Any]:
+        """
+        Python-side semantic search fallback (when PostgreSQL function unavailable)
+        
+        This method performs semantic search entirely in Python by:
+        1. Fetching games with embeddings from database
+        2. Calculating cosine similarity in Python
+        3. Filtering and sorting results
+        
+        This is slower than PostgreSQL function but works without setup.
+        """
+        logger.info("Using Python-side semantic search (PostgreSQL function unavailable)")
+        
+        try:
+            # Generate query embedding
+            query_embedding = EmbeddingService.encode_query(query)
+            query_vec = np.array(query_embedding)
+            
+            # Build database query
+            query_builder = self.db.schema(settings.DATABASE_SCHEMA)\
+                .table(settings.DATABASE_TABLE)\
+                .select('appid,name,short_description,price_cents,genres,categories,type,release_date,total_reviews,embedding')\
+                .not_.is_('embedding', 'null')\
+                .limit(min(500, limit * 10))  # Fetch more for filtering
+            
+            # Apply filters (database-level for efficiency)
+            if filters:
+                if filters.price_max:
+                    query_builder = query_builder.lte('price_cents', filters.price_max)
+                if filters.type:
+                    query_builder = query_builder.eq('type', filters.type)
+                # Apply genre filter at database level (AND logic: must have ALL selected genres)
+                if filters.genres:
+                    import json
+                    for genre in filters.genres:
+                        # Convert to JSON string format for JSONB containment
+                        query_builder = query_builder.contains('genres', json.dumps([genre]))
+                    logger.debug(f"Applied genre filter at database level: genres contains ALL of {filters.genres}")
+            
+            # Execute query
+            result = query_builder.execute()
+            
+            if not result.data:
+                return {
+                    'results': [],
+                    'total': 0,
+                    'offset': offset,
+                    'limit': limit,
+                    'query': query,
+                    'search_type': 'semantic_python_fallback',
+                    'sort_by': SortBy.RELEVANCE,
+                    'filters_applied': filters.dict() if filters else None
+                }
+            
+            # Calculate similarities
+            similarities = []
+            for game in result.data:
+                # Parse embedding (could be string or list)
+                game_embedding = game.get('embedding')
+                if not game_embedding:
+                    continue
+                
+                # Convert to numpy array
+                if isinstance(game_embedding, str):
+                    # Parse string format: "[0.1, 0.2, ...]"
+                    try:
+                        game_vec = np.array(json.loads(game_embedding))
+                    except (json.JSONDecodeError, ValueError, TypeError) as e:
+                        logger.debug(f"Failed to parse embedding for game {game.get('appid')}: {e}")
+                        continue
+                elif isinstance(game_embedding, list):
+                    game_vec = np.array(game_embedding)
+                else:
+                    logger.debug(f"Unexpected embedding type for game {game.get('appid')}: {type(game_embedding)}")
+                    continue
+                
+                # Calculate cosine similarity
+                similarity = np.dot(query_vec, game_vec) / (np.linalg.norm(query_vec) * np.linalg.norm(game_vec))
+                
+                # Apply minimum similarity threshold
+                if similarity < min_similarity:
+                    continue
+                
+                # Genre filter is already applied at database level (AND logic)
+                # No need to filter again here, but verify for safety
+                if filters and filters.genres:
+                    game_genres = game.get('genres', [])
+                    # AND logic: game must have ALL selected genres
+                    if not all(genre in game_genres for genre in filters.genres):
+                        logger.debug(f"Game {game.get('appid')} filtered out: missing required genres")
+                        continue
+                
+                similarities.append({
+                    'game': game,
+                    'similarity': float(similarity)
+                })
+            
+            # Sort by similarity (descending)
+            similarities.sort(key=lambda x: x['similarity'], reverse=True)
+            
+            # Apply pagination
+            paginated = similarities[offset:offset + limit]
+            
+            # Transform results
+            results = []
+            for item in paginated:
+                game = item['game']
+                results.append({
+                    'game_id': game['appid'],
+                    'title': game['name'],
+                    'description': game.get('short_description', ''),
+                    'price': round(game['price_cents'] / 100, 2) if game['price_cents'] else 0.0,
+                    'genres': game.get('genres', []),
+                    'categories': game.get('categories', []),
+                    'type': game.get('type'),
+                    'release_date': game.get('release_date'),
+                    'total_reviews': game.get('total_reviews'),
+                    'similarity_score': round(item['similarity'], 4),
+                    'relevance_score': round(item['similarity'], 4)
+                })
+            
+            logger.info(f"✓ Python semantic search returned {len(results)} results")
+            
+            return {
+                'results': results,
+                'total': len(similarities),
+                'offset': offset,
+                'limit': limit,
+                'query': query,
+                'search_type': 'semantic_python_fallback',
+                'sort_by': SortBy.RELEVANCE,  # Semantic search always sorts by similarity
+                'filters_applied': filters.dict() if filters else None
+            }
+            
+        except Exception as e:
+            logger.error(f"Python semantic search failed: {e}", exc_info=True)
+            # Final fallback to BM25
+            logger.warning("Falling back to BM25 search")
+            bm25_result = await self.search(
+                query, filters, SortBy.RELEVANCE, offset, limit
+            )
+            bm25_result['search_type'] = 'semantic_fallback_bm25'
+            bm25_result['fallback_reason'] = f'Python semantic search error: {str(e)}'
+            return bm25_result
 
 
 # Export service

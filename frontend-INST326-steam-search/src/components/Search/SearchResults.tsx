@@ -156,14 +156,17 @@ function GameCard({ game }: { game: any }) {
             <span className="text-gray-300">{game.total_reviews ? formatNumber(game.total_reviews) : 'N/A'}</span>
           </div>
 
-          {/* BM25 Score */}
-          {game.bm25_score !== undefined && game.bm25_score > 0 && (
+          {/* Relevance Score */}
+          {/* Phase 4: Display relevance score based on search mode */}
+          {(game.relevance_score !== undefined || game.similarity_score !== undefined || game.fusion_score !== undefined || game.bm25_score !== undefined) && (
             <div className="flex items-center gap-1.5">
               <svg className="w-3 h-3 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
               </svg>
               <span className="text-gray-500 font-medium">Relevance:</span>
-              <span className="text-steam-green font-medium">{game.bm25_score.toFixed(2)}</span>
+              <span className="text-steam-green font-medium">
+                {(game.relevance_score ?? game.fusion_score ?? game.similarity_score ?? game.bm25_score ?? 0).toFixed(4)}
+              </span>
             </div>
           )}
         </div>

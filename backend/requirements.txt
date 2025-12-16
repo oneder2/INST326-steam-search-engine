@@ -52,6 +52,12 @@ python-dateutil==2.8.2
 # For text relevance scoring and ranking
 rank-bm25==0.2.2
 
+# Semantic Search with pgvector (Phase 4)
+# Text embedding generation (updated for compatibility)
+sentence-transformers==2.3.1
+# PostgreSQL vector support
+pgvector==0.2.4
+
 # ============================================================================
 # Development Dependencies (Optional)
 # ============================================================================

@@ -104,6 +104,25 @@ class Settings(BaseSettings):
     """Weight for game description field in BM25 scoring"""
     
     # ========================================================================
+    # Semantic Search Configuration (Phase 4)
+    # ========================================================================
+    
+    SEMANTIC_SEARCH_ENABLED: bool = True
+    """Enable semantic search with pgvector"""
+    
+    SEMANTIC_MODEL_NAME: str = "all-MiniLM-L6-v2"
+    """Sentence transformer model for embeddings"""
+    
+    SEMANTIC_EMBEDDING_DIM: int = 384
+    """Dimension of embedding vectors"""
+    
+    SEMANTIC_MIN_SIMILARITY: float = 0.0
+    """Minimum similarity threshold for semantic search (0.0-1.0)"""
+    
+    HYBRID_SEARCH_ALPHA: float = 0.5
+    """Default alpha for hybrid search (0.0=pure semantic, 1.0=pure BM25)"""
+    
+    # ========================================================================
     # Configuration Class
     # ========================================================================
     

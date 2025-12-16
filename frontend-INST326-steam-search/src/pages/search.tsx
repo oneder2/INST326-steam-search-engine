@@ -24,7 +24,7 @@ import SearchBox from '@/components/Search/SearchBox';
 import SearchResults from '@/components/Search/SearchResults';
 import { GameResult } from '@/types/api';
 import { SEARCH_LIMITS } from '@/constants/api';
-import { simpleSearch, exportSearchResultsCSV, exportSearchResultsJSON, importGamesFromCSV, importGamesFromJSON } from '@/services/api';
+import { simpleSearch, semanticSearch, hybridSearch, exportSearchResultsCSV, exportSearchResultsJSON, importGamesFromCSV, importGamesFromJSON } from '@/services/api';
 import { exportSearchPreset, importSearchPreset, SearchPreset, savePresetToLocalStorage, loadPresetsFromLocalStorage } from '@/services/searchPresets';
 
 /**
@@ -49,6 +49,7 @@ export default function SearchPage() {
   const [selectedGenres, setSelectedGenres] = useState<string[]>([]);
   const [gameType, setGameType] = useState<string>('');
   const [sortBy, setSortBy] = useState<string>('relevance');
+  const [searchMode, setSearchMode] = useState<'bm25' | 'semantic' | 'hybrid'>('bm25'); // Phase 4: Search mode selector
   const [isExporting, setIsExporting] = useState(false);
   const [isImporting, setIsImporting] = useState(false);
   const [exportLimit, setExportLimit] = useState(100); // Export limit 1-100
@@ -64,6 +65,7 @@ export default function SearchPage() {
 
   /**
    * Load games from API with current search/filter settings
+   * Phase 4: Supports BM25, Semantic, and Hybrid search modes
    */
   const loadGames = async (page: number = 1) => {
     setIsLoading(true);
@@ -84,20 +86,41 @@ export default function SearchPage() {
         filters.type = gameType;
       }
       
-      // Call search API
-      const response = await simpleSearch({
-        query: searchQuery,
-        filters: Object.keys(filters).length > 0 ? filters : undefined,
-        sort_by: sortBy as any,
-        offset,
-        limit: SEARCH_LIMITS.DEFAULT_LIMIT
-      });
+      // Call appropriate search API based on search mode
+      let response: any;
+      if (searchMode === 'semantic') {
+        // Semantic search: vector similarity
+        response = await semanticSearch({
+          query: searchQuery,
+          filters: Object.keys(filters).length > 0 ? filters : undefined,
+          offset,
+          limit: SEARCH_LIMITS.DEFAULT_LIMIT
+        });
+      } else if (searchMode === 'hybrid') {
+        // Hybrid search: BM25 + Semantic fusion
+        response = await hybridSearch({
+          query: searchQuery,
+          filters: Object.keys(filters).length > 0 ? filters : undefined,
+          sort_by: sortBy as any,
+          offset,
+          limit: SEARCH_LIMITS.DEFAULT_LIMIT
+        }, 0.5); // alpha = 0.5 for balanced fusion
+      } else {
+        // BM25 search: keyword matching (default)
+        response = await simpleSearch({
+          query: searchQuery,
+          filters: Object.keys(filters).length > 0 ? filters : undefined,
+          sort_by: sortBy as any,
+          offset,
+          limit: SEARCH_LIMITS.DEFAULT_LIMIT
+        });
+      }
       
       // Transform backend response to frontend GameResult format
       const transformedGames = response.data.results.map((game: any) => ({
         id: game.game_id,
         title: game.title,
-        score: game.bm25_score || game.relevance_score || 0,
+        score: game.similarity_score || game.fusion_score || game.bm25_score || game.relevance_score || 0,
         price: game.price,
         genres: game.genres || [],
         categories: game.categories || [],
@@ -109,6 +132,9 @@ export default function SearchPage() {
         type: game.type || 'game',
         total_reviews: game.total_reviews || 0,
         bm25_score: game.bm25_score,
+        similarity_score: game.similarity_score, // Phase 4: Semantic search score
+        fusion_score: game.fusion_score, // Phase 4: Hybrid search score
+        relevance_score: game.relevance_score, // Relevance score for display
       }));
       
       setGames(transformedGames);
@@ -152,6 +178,9 @@ export default function SearchPage() {
   
   /**
    * Load games with specific parameters (used by useEffect)
+   * Phase 4: Supports BM25, Semantic, and Hybrid search modes
+   * 
+   * @param mode - Search mode override (to avoid React state delay)
    */
   const loadGamesWithParams = async (
     query: string,
@@ -159,7 +188,8 @@ export default function SearchPage() {
     genres: string[],
     type: string,
     sort: string,
-    page: number
+    page: number,
+    mode?: 'bm25' | 'semantic' | 'hybrid' // Optional mode override
   ) => {
     setIsLoading(true);
     setError(null);
@@ -179,29 +209,58 @@ export default function SearchPage() {
         filters.type = type;
       }
       
-      // Call search API
-      const response = await simpleSearch({
-        query,
-        filters: Object.keys(filters).length > 0 ? filters : undefined,
-        sort_by: sort as any,
-        offset,
-        limit: SEARCH_LIMITS.DEFAULT_LIMIT
-      });
+      // Use provided mode or fall back to state (for backward compatibility)
+      const currentMode = mode || searchMode;
+      
+      // Call appropriate search API based on search mode
+      let response: any;
+      if (currentMode === 'semantic') {
+        // Semantic search: vector similarity
+        response = await semanticSearch({
+          query,
+          filters: Object.keys(filters).length > 0 ? filters : undefined,
+          offset,
+          limit: SEARCH_LIMITS.DEFAULT_LIMIT
+        });
+      } else if (currentMode === 'hybrid') {
+        // Hybrid search: BM25 + Semantic fusion
+        response = await hybridSearch({
+          query,
+          filters: Object.keys(filters).length > 0 ? filters : undefined,
+          sort_by: sort as any,
+          offset,
+          limit: SEARCH_LIMITS.DEFAULT_LIMIT
+        }, 0.5); // alpha = 0.5 for balanced fusion
+      } else {
+        // BM25 search: keyword matching (default)
+        response = await simpleSearch({
+          query,
+          filters: Object.keys(filters).length > 0 ? filters : undefined,
+          sort_by: sort as any,
+          offset,
+          limit: SEARCH_LIMITS.DEFAULT_LIMIT
+        });
+      }
       
       // Transform backend response to frontend GameResult format
       const transformedGames = response.data.results.map((game: any) => ({
         id: game.game_id,
         title: game.title,
-        score: game.relevance_score || 0,
+        score: game.similarity_score || game.fusion_score || game.bm25_score || game.relevance_score || 0,
         price: game.price,
         genres: game.genres || [],
+        categories: game.categories || [],
         review_status: 'Mixed',
         deck_compatible: false,
         description: game.description || '',
         coop_type: game.coop_type,
         release_date: game.release_date,
-        developer: game.developer,
-        publisher: game.publisher,
+        type: game.type || 'game',
+        total_reviews: game.total_reviews || 0,
+        bm25_score: game.bm25_score,
+        similarity_score: game.similarity_score, // Phase 4: Semantic search score
+        fusion_score: game.fusion_score, // Phase 4: Hybrid search score
+        relevance_score: game.relevance_score, // Relevance score for display
       }));
       
       setGames(transformedGames);
@@ -623,7 +682,7 @@ export default function SearchPage() {
           <div className="lg:col-span-3">
             {/* Results Header */}
             <div className="mb-6">
-              <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center justify-between mb-4 flex-wrap gap-4">
                 <div>
                   <h2 className="text-xl font-semibold text-white">
                     {searchQuery ? `Results for "${searchQuery}"` : 'All Games'}
@@ -633,28 +692,64 @@ export default function SearchPage() {
                       </span>
                     )}
                   </h2>
+                  {/* Phase 4: Display current search mode */}
+                  {searchQuery && (
+                    <div className="mt-2">
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-steam-blue-light text-steam-green border border-steam-green">
+                        {searchMode === 'bm25' && '🔍 BM25 (Keyword Matching)'}
+                        {searchMode === 'semantic' && '🧠 Semantic (Meaning Matching)'}
+                        {searchMode === 'hybrid' && '🔀 Hybrid (BM25 + Semantic)'}
+                      </span>
+                    </div>
+                  )}
                 </div>
                 
-                {/* Sort Dropdown */}
-                <div>
-                  <select
-                    value={sortBy}
-                    onChange={(e) => {
-                      const newSort = e.target.value;
-                      setSortBy(newSort);
-                      setCurrentPage(1);
-                      loadGamesWithParams(searchQuery, priceMax, selectedGenres, gameType, newSort, 1);
-                    }}
-                    className="px-3 py-2 bg-steam-blue border border-steam-blue-light rounded text-white text-sm focus:outline-none focus:border-steam-green"
-                  >
-                    <option value="relevance">Sort by Relevance (BM25)</option>
-                    <option value="price_asc">Price: Low to High</option>
-                    <option value="price_desc">Price: High to Low</option>
-                    <option value="reviews">Most Reviewed</option>
-                    <option value="newest">Newest First</option>
-                    <option value="oldest">Oldest First</option>
-                    <option value="name">Name (A-Z)</option>
-                  </select>
+                {/* Controls Row */}
+                <div className="flex items-center gap-3 flex-wrap">
+                  {/* Phase 4: Search Mode Selector */}
+                  <div>
+                    <label className="block text-xs text-gray-400 mb-1">Search Mode</label>
+                    <select
+                      value={searchMode}
+                      onChange={(e) => {
+                        const newMode = e.target.value as 'bm25' | 'semantic' | 'hybrid';
+                        setSearchMode(newMode);
+                        setCurrentPage(1);
+                        // Trigger search with new mode (pass mode directly to avoid React state delay)
+                        loadGamesWithParams(searchQuery, priceMax, selectedGenres, gameType, sortBy, 1, newMode);
+                      }}
+                      className="px-3 py-2 bg-steam-blue border border-steam-blue-light rounded text-white text-sm focus:outline-none focus:border-steam-green"
+                      title="Select search algorithm: BM25 (keywords), Semantic (meaning), or Hybrid (both)"
+                    >
+                      <option value="bm25">BM25 (Keywords)</option>
+                      <option value="semantic">Semantic (Meaning)</option>
+                      <option value="hybrid">Hybrid (Both)</option>
+                    </select>
+                  </div>
+                  
+                  {/* Sort Dropdown */}
+                  <div>
+                    <label className="block text-xs text-gray-400 mb-1">Sort By</label>
+                    <select
+                      value={sortBy}
+                      onChange={(e) => {
+                        const newSort = e.target.value;
+                        setSortBy(newSort);
+                        setCurrentPage(1);
+                        loadGamesWithParams(searchQuery, priceMax, selectedGenres, gameType, newSort, 1);
+                      }}
+                      className="px-3 py-2 bg-steam-blue border border-steam-blue-light rounded text-white text-sm focus:outline-none focus:border-steam-green"
+                    >
+                      <option value="relevance">Sort by Relevance</option>
+                      <option value="price_asc">Price: Low to High</option>
+                      <option value="price_desc">Price: High to Low</option>
+                      <option value="reviews">Most Reviewed</option>
+                      <option value="newest">Newest First</option>
+                      <option value="oldest">Oldest First</option>
+                      <option value="name">Name (A-Z)</option>
+                      <option value="name_desc">Name (Z-A)</option>
+                    </select>
+                  </div>
                 </div>
               </div>
               

@@ -206,6 +206,7 @@ export class ApiClient {
    * 
    * Simplified search interface for Phase 1 implementation.
    * Supports text search, filters, sorting, and pagination.
+   * Uses BM25 ranking algorithm (Phase 3).
    * 
    * @param params Search parameters
    * @returns Promise<ApiResponse<any>> Search results
@@ -228,6 +229,85 @@ export class ApiClient {
   }): Promise<ApiResponse<any>> {
     try {
       const response = await this.client.post('/api/v1/search/games', {
+        query: params.query || '',
+        filters: params.filters || null,
+        sort_by: params.sort_by || 'relevance',
+        offset: params.offset || 0,
+        limit: params.limit || 20
+      });
+      return this.transformResponse(response);
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  /**
+   * Semantic search for games (Phase 4)
+   * POST /api/v1/search/semantic
+   * 
+   * Uses vector similarity (pgvector) to find games by meaning,
+   * not just exact keyword matching.
+   * 
+   * @param params Search parameters
+   * @returns Promise<ApiResponse<any>> Search results with similarity scores
+   */
+  async semanticSearch(params: {
+    query?: string;
+    filters?: {
+      price_min?: number;
+      price_max?: number;
+      genres?: string[];
+      categories?: string[];
+      type?: string;
+      release_date_after?: string;
+      release_date_before?: string;
+      min_reviews?: number;
+    };
+    offset?: number;
+    limit?: number;
+  }): Promise<ApiResponse<any>> {
+    try {
+      const response = await this.client.post('/api/v1/search/semantic', {
+        query: params.query || '',
+        filters: params.filters || null,
+        offset: params.offset || 0,
+        limit: params.limit || 20
+      });
+      return this.transformResponse(response);
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  /**
+   * Hybrid search for games (Phase 4)
+   * POST /api/v1/search/hybrid
+   * 
+   * Combines BM25 (keyword matching) and semantic search (meaning matching)
+   * using Reciprocal Rank Fusion (RRF).
+   * 
+   * @param params Search parameters
+   * @param alpha Fusion weight (0.0 = pure semantic, 1.0 = pure BM25, 0.5 = balanced)
+   * @returns Promise<ApiResponse<any>> Search results with fusion scores
+   */
+  async hybridSearch(params: {
+    query?: string;
+    filters?: {
+      price_min?: number;
+      price_max?: number;
+      genres?: string[];
+      categories?: string[];
+      type?: string;
+      release_date_after?: string;
+      release_date_before?: string;
+      min_reviews?: number;
+    };
+    sort_by?: 'relevance' | 'price_asc' | 'price_desc' | 'reviews' | 'newest' | 'oldest' | 'name';
+    offset?: number;
+    limit?: number;
+  }, alpha: number = 0.5): Promise<ApiResponse<any>> {
+    try {
+      const response = await this.client.post(`/api/v1/search/hybrid?alpha=${alpha}`, {
         query: params.query || '',
         filters: params.filters || null,
         sort_by: params.sort_by || 'relevance',
@@ -425,6 +505,7 @@ export const searchGames = (query: SearchQuerySchema) => apiClient.searchGames(q
 
 /**
  * Convenience function for simple search (Phase 1)
+ * Uses BM25 ranking algorithm
  */
 export const simpleSearch = (params: {
   query?: string;
@@ -433,6 +514,29 @@ export const simpleSearch = (params: {
   offset?: number;
   limit?: number;
 }) => apiClient.simpleSearch(params);
+
+/**
+ * Convenience function for semantic search (Phase 4)
+ * Uses vector similarity (pgvector)
+ */
+export const semanticSearch = (params: {
+  query?: string;
+  filters?: any;
+  offset?: number;
+  limit?: number;
+}) => apiClient.semanticSearch(params);
+
+/**
+ * Convenience function for hybrid search (Phase 4)
+ * Combines BM25 + semantic with RRF fusion
+ */
+export const hybridSearch = (params: {
+  query?: string;
+  filters?: any;
+  sort_by?: string;
+  offset?: number;
+  limit?: number;
+}, alpha?: number) => apiClient.hybridSearch(params, alpha);
 
 /**
  * Convenience function for search suggestions

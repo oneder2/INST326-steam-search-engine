@@ -11,7 +11,7 @@ TODO Phase 2: Add GET /api/v1/search/suggest for search suggestions
 TODO Phase 3: Add search analytics endpoint
 """
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from supabase import Client
 from app.database import get_db
 from app.models.search import SearchRequest, SearchResponse
@@ -194,6 +194,146 @@ async def search_games(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Search failed due to server error. Please try again later."
+        )
+
+
+# ============================================================================
+# Phase 4: Semantic and Hybrid Search Endpoints
+# ============================================================================
+
+@router.post(
+    "/search/semantic",
+    response_model=SearchResponse,
+    summary="Semantic Search",
+    description="Search games using vector similarity (pgvector)",
+    tags=["Search", "Semantic"]
+)
+async def semantic_search_endpoint(
+    request: SearchRequest,
+    db: Client = Depends(get_db)
+) -> SearchResponse:
+    """
+    Semantic search using pgvector embeddings
+    
+    This endpoint finds games that are semantically similar to the query,
+    even if they don't contain the exact words. It uses vector similarity
+    (cosine similarity) to match meaning rather than keywords.
+    
+    **Example:**
+    ```json
+    {
+      "query": "space exploration adventure",
+      "filters": {
+        "price_max": 5000
+      },
+      "limit": 20
+    }
+    ```
+    
+    **How it works:**
+    1. Query is converted to a 384-dimensional vector embedding
+    2. Database finds games with similar embeddings
+    3. Results are ranked by cosine similarity
+    
+    **Use cases:**
+    - Finding games by concept/theme
+    - Discovering similar games
+    - Handling typos and synonyms
+    """
+    try:
+        logger.info(f"Semantic search request: query='{request.query}'")
+        
+        search_service = SearchService(db)
+        result = await search_service.semantic_search(
+            query=request.query,
+            filters=request.filters,
+            limit=request.limit or 20,
+            offset=request.offset or 0
+        )
+        
+        return SearchResponse(**result)
+        
+    except Exception as e:
+        logger.error(f"Semantic search failed: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Semantic search failed: {str(e)}"
+        )
+
+
+@router.post(
+    "/search/hybrid",
+    response_model=SearchResponse,
+    summary="Hybrid Search",
+    description="Combined BM25 and semantic search with score fusion",
+    tags=["Search", "Hybrid"]
+)
+async def hybrid_search_endpoint(
+    request: SearchRequest,
+    alpha: float = Query(
+        0.5,
+        ge=0.0,
+        le=1.0,
+        description="Fusion weight: 0.0=pure semantic, 1.0=pure BM25, 0.5=balanced"
+    ),
+    db: Client = Depends(get_db)
+) -> SearchResponse:
+    """
+    Hybrid search combining BM25 and semantic search
+    
+    Uses Reciprocal Rank Fusion (RRF) to combine:
+    - **BM25**: Keyword-based matching (exact words)
+    - **Semantic**: Meaning-based matching (concepts)
+    
+    **Alpha Parameter:**
+    - `0.0`: Pure semantic search (meaning only)
+    - `0.5`: Balanced (recommended)
+    - `1.0`: Pure BM25 (keywords only)
+    
+    **Example:**
+    ```json
+    {
+      "query": "action shooter multiplayer",
+      "filters": {
+        "genres": ["Action", "Shooter"]
+      },
+      "limit": 20
+    }
+    ```
+    With `alpha=0.5` (default)
+    
+    **Benefits:**
+    - Best of both worlds
+    - More robust results
+    - Handles both exact matches and concepts
+    
+    **When to use:**
+    - General search (recommended default)
+    - When you want comprehensive results
+    - For production search
+    """
+    try:
+        logger.info(f"Hybrid search request: query='{request.query}', alpha={alpha}")
+        
+        from app.models.search import SortBy
+        
+        search_service = SearchService(db)
+        result = await search_service.hybrid_search(
+            query=request.query,
+            filters=request.filters,
+            sort_by=request.sort_by or SortBy.RELEVANCE,
+            limit=request.limit or 20,
+            offset=request.offset or 0,
+            alpha=alpha
+        )
+        
+        return SearchResponse(**result)
+        
+    except Exception as e:
+        logger.error(f"Hybrid search failed: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Hybrid search failed: {str(e)}"
         )
 
 

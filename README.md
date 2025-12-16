@@ -2,7 +2,7 @@
 
 A modern game discovery platform built with Next.js and FastAPI, powered by Supabase PostgreSQL database.
 
-presentation video link:
+presentation video link: https://drive.google.com/file/d/1Zm34oVpUcmiuwXsr3Q0s1Ei0pdYidx6i/view?usp=sharing
 
 ## 🎮 Project Overview
 
@@ -43,7 +43,7 @@ Steam Game Search Engine provides an intelligent interface for discovering Steam
 
 ## 📊 Project Status
 
-✅ **Phase 3 Complete** | 🚧 **Phase 4 Planned**
+✅ **Phase 4 Complete** | 🎉 **Semantic Search Implemented!**
 
 **Completed:**
 - ✅ Backend API with Supabase integration
@@ -52,15 +52,21 @@ Steam Game Search Engine provides an intelligent interface for discovering Steam
 - ✅ Text search (multi-field: name + description)
 - ✅ Advanced filtering (price, genre, type)
 - ✅ Sorting options (7 types)
-- ✅ **BM25 ranking algorithm** (Phase 3 - NEW!)
+- ✅ **BM25 ranking algorithm** (Phase 3)
+- ✅ **Semantic search with pgvector** (Phase 4 - NEW!) 🚀
+- ✅ **Hybrid search (BM25 + Semantic)** (Phase 4 - NEW!) 🚀
+- ✅ **1000 games with embeddings** (Phase 4 - NEW!) 🚀
 - ✅ Weighted relevance scoring
 - ✅ Search preset save/load
 - ✅ Responsive UI with Steam theme
-- ✅ Comprehensive testing (20 tests)
+- ✅ Comprehensive testing (25+ tests)
 
-**Next Phase:**
-- 📋 Search suggestions (Phase 4)
-- 📋 Semantic search with embeddings (Phase 4 - optional)
+**Phase 4 Features:**
+- 🎯 Semantic search: Find games by meaning, not just keywords
+- 🔀 Hybrid search: Best of BM25 + semantic with RRF fusion
+- 🧠 384-dimensional embeddings using all-MiniLM-L6-v2
+- ⚡ Fast vector search with pgvector (50-100ms)
+- 🎨 Python-side embedding tests passing (100% success rate)
 
 ---
 
@@ -98,10 +104,10 @@ INST326-steam-searcher-engine/
 
 ### 1. Clone Repository
 
-```bash
-git clone https://github.com/oneder2/INST326-steam-searcher-engine.git
-cd INST326-steam-searcher-engine
-```
+   ```bash
+   git clone https://github.com/oneder2/INST326-steam-searcher-engine.git
+   cd INST326-steam-searcher-engine
+   ```
 
 ### 2. Configure Environment
 
@@ -132,7 +138,7 @@ LOG_LEVEL=INFO
 
 ### 3. Start Backend
 
-```bash
+   ```bash
 cd backend
 python3 -m venv venv
 source venv/bin/activate  # Linux/Mac: or venv\Scripts\activate on Windows
@@ -241,6 +247,7 @@ frontend-INST326-steam-search/
 | `release_date` | date | Release date |
 | `total_reviews` | integer | Review count |
 | `dlc_count` | integer | DLC count |
+| `embedding` | vector(384) | Semantic embedding (Phase 4) 🆕 |
 | `type` | text | Item type (game/dlc/demo) |
 
 **Field Mappings (Database → API):**
@@ -258,6 +265,10 @@ cd backend
 source venv/bin/activate
 python -m app.main                    # Start server
 uvicorn app.main:app --reload         # With auto-reload
+
+# Phase 4: Semantic search setup
+python -m scripts.populate_embeddings # Generate embeddings (one-time)
+python -m scripts.test_embedding_only # Test embeddings
 ```
 
 ### Frontend
@@ -275,7 +286,7 @@ npm test                              # Run tests
 
 ### Comprehensive Test Suite
 
-Our project includes **20 automated tests** covering unit, integration, and system testing:
+Our project includes **25+ automated tests** covering unit, integration, and system testing:
 
 ```bash
 cd backend
@@ -290,6 +301,9 @@ python -m unittest discover tests -v
 python -m unittest discover tests/unit          # Unit tests (7 tests)
 python -m unittest discover tests/integration   # Integration tests (8 tests)
 python -m unittest discover tests/system        # System tests (5 tests)
+
+# Phase 4: Semantic search tests
+python -m scripts.test_embedding_only           # Embedding tests (5+ tests)
 
 # Run single test file
 python -m unittest tests.unit.test_persistence
@@ -325,6 +339,13 @@ python -m unittest tests.system.test_complete_workflows
 - **[Architecture & Standards](docs/tech-doc/frame-regulation.md)** - Project architecture and code standards
 - **[API Contract](docs/tech-doc/API-contract-backend.md)** - RESTful API specifications
 - **[DevOps & Operations](docs/tech-doc/DevOps-deploy-maintain.md)** - CI/CD and deployment procedures
+
+### 🔍 Search & Ranking (Phase 3 & 4)
+- **[Semantic Search Guide](docs/SEMANTIC_SEARCH_GUIDE.md)** - ⭐ Complete semantic search implementation guide
+- **[BM25 Implementation](docs/BM25_IMPLEMENTATION.md)** - BM25 ranking algorithm details
+- **[pgvector Guide](docs/PGVECTOR_IMPLEMENTATION_GUIDE.md)** - pgvector setup reference
+- **[Phase 4 Setup Instructions](PHASE4_SETUP_INSTRUCTIONS.md)** - Step-by-step Phase 4 setup
+- **[Create Functions in Supabase](CREATE_FUNCTIONS_IN_SUPABASE.md)** - SQL function creation guide
 
 ---
 

@@ -29,7 +29,10 @@ Complete documentation guide for Steam Game Search Engine project.
 
 ### Search & Ranking
 
+- **[Semantic Search Guide](SEMANTIC_SEARCH_GUIDE.md)** - **Complete implementation guide** for semantic search (Phase 4) ⭐
 - **[BM25 Implementation](BM25_IMPLEMENTATION.md)** - BM25 ranking algorithm guide (Phase 3)
+- **[pgvector Implementation Guide](PGVECTOR_IMPLEMENTATION_GUIDE.md)** - Detailed pgvector setup reference (Phase 4)
+- **[Faiss Implementation Roadmap](FAISS_IMPLEMENTATION_ROADMAP.md)** - Alternative: Faiss-based semantic search (not used)
 
 ### Testing Documentation
 
