@@ -10,8 +10,22 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
 import MainLayout from '@/components/Layout/MainLayout';
-import { GameDetailResponse, CoopType } from '@/types/api';
-import { REVIEW_STATUS_CONFIG } from '@/constants/api';
+import { getGameDetail } from '@/services/api';
+
+// Actual game detail type from backend
+interface GameDetail {
+  game_id: number;
+  title: string;
+  price: number;
+  genres: string[];
+  categories: string[];
+  short_description?: string;
+  detailed_description?: string;
+  release_date?: string;
+  total_reviews?: number;
+  dlc_count?: number;
+  type?: string;
+}
 
 /**
  * Game Detail Page Component
@@ -27,7 +41,7 @@ export default function GameDetailPage() {
   const router = useRouter();
   const { id } = router.query;
   
-  const [game, setGame] = useState<GameDetailResponse | null>(null);
+  const [game, setGame] = useState<GameDetail | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -48,39 +62,38 @@ export default function GameDetailPage() {
     setError(null);
     
     try {
-      // TODO: Replace with actual API call
-      // const response = await getGameDetail(gameId);
-      // setGame(response.data);
+      // Call actual API
+      // Note: getGameDetail returns ApiResponse<GameDetailResponse>
+      // The backend directly returns GameDetail, so response.data IS the GameDetail object
+      const response = await getGameDetail(gameId);
       
-      // Mock game data for now
-      const mockGame: GameDetailResponse = {
-        game_id: gameId,
-        title: `Mock Game ${gameId}`,
-        description: 'A short description of this amazing game.',
-        price: 29.99,
-        genres: ['Action', 'Adventure', 'Indie'],
-        coop_type: CoopType.ONLINE,
-        deck_comp: true,
-        ranking_metrics: {
-          review_stability: 0.85,
-          player_activity: 0.92,
-        },
-        full_description: `This is a comprehensive description of Mock Game ${gameId}. It features exciting gameplay, stunning visuals, and an engaging storyline that will keep you entertained for hours. The game combines elements of action and adventure with innovative mechanics that set it apart from other titles in the genre.`,
-        screenshots: [
-          'https://via.placeholder.com/800x450/1b2838/ffffff?text=Screenshot+1',
-          'https://via.placeholder.com/800x450/2a475e/ffffff?text=Screenshot+2',
-          'https://via.placeholder.com/800x450/171a21/ffffff?text=Screenshot+3',
-        ],
-        trailer_url: 'https://example.com/trailer',
-        release_date: '2024-01-15',
-        developer: 'Mock Studios',
-        publisher: 'Indie Games Inc.',
-      };
+      console.log('API Response:', response); // Debug log
       
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-      setGame(mockGame);
+      // response.data is already the GameDetail object from backend
+      if (response.data) {
+        const data = response.data as any;
+        
+        // Transform data to match our GameDetail type
+        const gameData: GameDetail = {
+          game_id: data.game_id,
+          title: data.title,
+          price: data.price,
+          genres: data.genres || [],
+          categories: data.categories || [],
+          short_description: data.short_description,
+          detailed_description: data.detailed_description,
+          release_date: data.release_date,
+          total_reviews: data.total_reviews,
+          dlc_count: data.dlc_count,
+          type: data.type,
+        };
+        
+        console.log('Transformed game data:', gameData); // Debug log
+        setGame(gameData);
+      } else {
+        console.error('No data in response:', response);
+        throw new Error('Game not found');
+      }
     } catch (err) {
       setError('Failed to load game details. Please try again.');
       console.error('Game detail fetch error:', err);
@@ -154,9 +167,6 @@ export default function GameDetailPage() {
     );
   }
 
-  const reviewStatus = game.review_status || 'Mixed';
-  const reviewConfig = REVIEW_STATUS_CONFIG[reviewStatus as keyof typeof REVIEW_STATUS_CONFIG];
-
   return (
     <MainLayout
       title={`${game.title} - Steam Game Search Engine`}
@@ -184,17 +194,17 @@ export default function GameDetailPage() {
               </h1>
               
               <div className="flex items-center gap-4 mb-4">
-                <span
-                  className={`px-3 py-1 text-sm font-medium rounded ${reviewConfig.color} ${reviewConfig.textColor}`}
-                >
-                  {game.review_status || 'Mixed'}
-                </span>
-                
-                {game.deck_comp && (
-                  <span className="px-3 py-1 bg-steam-green text-sm text-white rounded">
-                    Steam Deck Compatible
+                {game.total_reviews !== undefined && game.total_reviews !== null && (
+                  <span className="px-3 py-1 bg-steam-blue text-sm text-white rounded">
+                    {game.total_reviews.toLocaleString()} Reviews
                   </span>
                 )}
+                
+                <span className={`px-3 py-1 text-sm font-medium rounded ${
+                  game.type === 'game' ? 'bg-green-900 text-green-200' : 'bg-blue-900 text-blue-200'
+                }`}>
+                  {game.type === 'game' ? 'Game' : 'DLC'}
+                </span>
               </div>
               
               <div className="flex flex-wrap gap-2">
@@ -209,30 +219,12 @@ export default function GameDetailPage() {
               </div>
             </div>
 
-            {/* Screenshots */}
-            {game.screenshots && game.screenshots.length > 0 && (
-              <div className="mb-6">
-                <h2 className="text-xl font-semibold text-white mb-4">Screenshots</h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {game.screenshots.map((screenshot, index) => (
-                    <div key={index} className="aspect-video bg-steam-blue-light rounded overflow-hidden">
-                      <img
-                        src={screenshot}
-                        alt={`${game.title} screenshot ${index + 1}`}
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
             {/* Description */}
             <div className="mb-6">
               <h2 className="text-xl font-semibold text-white mb-4">About This Game</h2>
               <div className="prose prose-invert max-w-none">
-                <p className="text-gray-300 leading-relaxed">
-                  {game.full_description || game.description}
+                <p className="text-gray-300 leading-relaxed whitespace-pre-wrap">
+                  {game.detailed_description || game.short_description || 'No description available.'}
                 </p>
               </div>
             </div>
@@ -242,64 +234,50 @@ export default function GameDetailPage() {
               <div>
                 <h3 className="text-lg font-semibold text-white mb-3">Game Information</h3>
                 <dl className="space-y-2">
-                  {game.developer && (
-                    <>
-                      <dt className="text-sm text-gray-400">Developer</dt>
-                      <dd className="text-sm text-white">{game.developer}</dd>
-                    </>
-                  )}
-                  {game.publisher && (
-                    <>
-                      <dt className="text-sm text-gray-400">Publisher</dt>
-                      <dd className="text-sm text-white">{game.publisher}</dd>
-                    </>
-                  )}
                   {game.release_date && (
                     <>
                       <dt className="text-sm text-gray-400">Release Date</dt>
                       <dd className="text-sm text-white">
-                        {new Date(game.release_date).toLocaleDateString()}
+                        {new Date(game.release_date).toLocaleDateString('en-US', {
+                          year: 'numeric',
+                          month: 'long',
+                          day: 'numeric'
+                        })}
                       </dd>
                     </>
                   )}
-                  <dt className="text-sm text-gray-400">Multiplayer</dt>
-                  <dd className="text-sm text-white">{game.coop_type}</dd>
+                  <dt className="text-sm text-gray-400">Type</dt>
+                  <dd className="text-sm text-white capitalize">{game.type || 'Game'}</dd>
+                  
+                  {game.dlc_count !== undefined && game.dlc_count > 0 && (
+                    <>
+                      <dt className="text-sm text-gray-400">DLC Available</dt>
+                      <dd className="text-sm text-white">{game.dlc_count} DLC(s)</dd>
+                    </>
+                  )}
                 </dl>
               </div>
 
               <div>
-                <h3 className="text-lg font-semibold text-white mb-3">Quality Metrics</h3>
-                <div className="space-y-3">
-                  <div>
-                    <div className="flex justify-between text-sm mb-1">
-                      <span className="text-gray-400">Review Stability</span>
-                      <span className="text-white">
-                        {Math.round(game.ranking_metrics.review_stability * 100)}%
-                      </span>
-                    </div>
-                    <div className="w-full bg-steam-blue-dark rounded-full h-2">
-                      <div
-                        className="bg-steam-green h-2 rounded-full transition-all duration-300"
-                        style={{ width: `${game.ranking_metrics.review_stability * 100}%` }}
-                      />
-                    </div>
-                  </div>
+                <h3 className="text-lg font-semibold text-white mb-3">Community</h3>
+                <dl className="space-y-2">
+                  {game.total_reviews !== undefined && game.total_reviews !== null && (
+                    <>
+                      <dt className="text-sm text-gray-400">Total Reviews</dt>
+                      <dd className="text-sm text-white">{game.total_reviews.toLocaleString()}</dd>
+                    </>
+                  )}
                   
-                  <div>
-                    <div className="flex justify-between text-sm mb-1">
-                      <span className="text-gray-400">Player Activity</span>
-                      <span className="text-white">
-                        {Math.round(game.ranking_metrics.player_activity * 100)}%
-                      </span>
-                    </div>
-                    <div className="w-full bg-steam-blue-dark rounded-full h-2">
-                      <div
-                        className="bg-steam-green h-2 rounded-full transition-all duration-300"
-                        style={{ width: `${game.ranking_metrics.player_activity * 100}%` }}
-                      />
-                    </div>
-                  </div>
-                </div>
+                  {game.categories && game.categories.length > 0 && (
+                    <>
+                      <dt className="text-sm text-gray-400">Features</dt>
+                      <dd className="text-sm text-white">
+                        {game.categories.slice(0, 3).join(', ')}
+                        {game.categories.length > 3 && ` +${game.categories.length - 3} more`}
+                      </dd>
+                    </>
+                  )}
+                </dl>
               </div>
             </div>
           </div>

@@ -455,5 +455,201 @@ export const getAllGames = (offset: number = 0, limit: number = 20) =>
  */
 export const checkApiHealth = () => apiClient.checkHealth();
 
+/**
+ * Export search results to CSV
+ * Downloads CSV file with current search results
+ * 
+ * @param params - Search parameters (same as search query)
+ * @returns Promise that resolves when download starts
+ */
+export const exportSearchResultsCSV = async (params: {
+  query?: string;
+  filters?: any;
+  sort_by?: string;
+  offset?: number;
+  limit?: number;
+}) => {
+  const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000';
+  
+  try {
+    // Build proper SearchRequest body matching backend expectations
+    const requestBody = {
+      query: params.query || '',  // Required field, must be string
+      filters: params.filters || null,  // Optional, can be null
+      sort_by: params.sort_by || 'relevance',
+      offset: params.offset || 0,
+      limit: params.limit || 1000, // Get more results for export
+    };
+    
+    const response = await fetch(`${baseUrl}/api/v1/export/csv`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(requestBody),
+    });
+    
+    if (!response.ok) {
+      throw new Error('Export failed');
+    }
+    
+    // Get filename from response headers or use default
+    const contentDisposition = response.headers.get('content-disposition');
+    let filename = 'search_results.csv';
+    if (contentDisposition) {
+      const matches = /filename="?([^"]+)"?/.exec(contentDisposition);
+      if (matches && matches[1]) {
+        filename = matches[1];
+      }
+    }
+    
+    // Create blob and trigger download
+    const blob = await response.blob();
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    window.URL.revokeObjectURL(url);
+    document.body.removeChild(a);
+    
+    return { success: true };
+  } catch (error) {
+    console.error('Export to CSV failed:', error);
+    throw error;
+  }
+};
+
+/**
+ * Export search results to JSON
+ * Downloads JSON file with current search results
+ * 
+ * @param params - Search parameters (same as search query)
+ * @returns Promise that resolves when download starts
+ */
+export const exportSearchResultsJSON = async (params: {
+  query?: string;
+  filters?: any;
+  sort_by?: string;
+  offset?: number;
+  limit?: number;
+}) => {
+  const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000';
+  
+  try {
+    // Build proper SearchRequest body matching backend expectations
+    const requestBody = {
+      query: params.query || '',  // Required field, must be string
+      filters: params.filters || null,  // Optional, can be null
+      sort_by: params.sort_by || 'relevance',
+      offset: params.offset || 0,
+      limit: params.limit || 1000, // Get more results for export
+    };
+    
+    const response = await fetch(`${baseUrl}/api/v1/export/json`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(requestBody),
+    });
+    
+    if (!response.ok) {
+      throw new Error('Export failed');
+    }
+    
+    // Get filename from response headers or use default
+    const contentDisposition = response.headers.get('content-disposition');
+    let filename = 'search_results.json';
+    if (contentDisposition) {
+      const matches = /filename="?([^"]+)"?/.exec(contentDisposition);
+      if (matches && matches[1]) {
+        filename = matches[1];
+      }
+    }
+    
+    // Create blob and trigger download
+    const blob = await response.blob();
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    window.URL.revokeObjectURL(url);
+    document.body.removeChild(a);
+    
+    return { success: true };
+  } catch (error) {
+    console.error('Export to JSON failed:', error);
+    throw error;
+  }
+};
+
+/**
+ * Import games data from CSV file
+ * Uploads CSV file to backend for processing
+ * 
+ * @param file - CSV file to upload
+ * @returns Promise with imported game data
+ */
+export const importGamesFromCSV = async (file: File) => {
+  const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000';
+  
+  try {
+    const formData = new FormData();
+    formData.append('file', file);
+    
+    const response = await fetch(`${baseUrl}/api/v1/import/csv`, {
+      method: 'POST',
+      body: formData,
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({ detail: 'Import failed' }));
+      throw new Error(errorData.detail || 'Import failed');
+    }
+    
+    const data = await response.json();
+    return { success: true, data };
+  } catch (error) {
+    console.error('Import from CSV failed:', error);
+    throw error;
+  }
+};
+
+/**
+ * Import games data from JSON file
+ * Uploads JSON file to backend for processing
+ * 
+ * @param file - JSON file to upload
+ * @returns Promise with imported game data
+ */
+export const importGamesFromJSON = async (file: File) => {
+  const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000';
+  
+  try {
+    const formData = new FormData();
+    formData.append('file', file);
+    
+    const response = await fetch(`${baseUrl}/api/v1/import/json`, {
+      method: 'POST',
+      body: formData,
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({ detail: 'Import failed' }));
+      throw new Error(errorData.detail || 'Import failed');
+    }
+    
+    const data = await response.json();
+    return { success: true, data };
+  } catch (error) {
+    console.error('Import from JSON failed:', error);
+    throw error;
+  }
+};
+
 // Export the ApiClient class as default
 export default ApiClient;

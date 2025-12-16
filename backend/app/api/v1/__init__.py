@@ -13,3 +13,4 @@ from app.api.v1 import health, games
 
 __all__ = ["health", "games"]
 
+

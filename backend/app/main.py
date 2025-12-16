@@ -30,7 +30,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 from app.config import settings
 from app.database import db
-from app.api.v1 import games, health, search, export
+from app.api.v1 import games, health, search, export, import_data
 import logging
 
 # ============================================================================
@@ -142,7 +142,7 @@ app = FastAPI(
 # This allows the Next.js frontend (localhost:3000) to make API requests
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.cors_origins_list,
+    allow_origins=settings.cors_origins_list + ["null"],  # Allow file:// protocol for testing
     allow_credentials=True,
     allow_methods=["*"],  # Allow all HTTP methods (GET, POST, etc.)
     allow_headers=["*"],  # Allow all headers
@@ -180,6 +180,13 @@ app.include_router(
     export.router,
     prefix="/api/v1",
     tags=["Export"]
+)
+
+# Import router
+app.include_router(
+    import_data.router,
+    prefix="/api/v1",
+    tags=["Import"]
 )
 
 logger.info("✅ API routers registered")

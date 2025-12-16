@@ -186,3 +186,4 @@ async def get_game_detail(
             detail="Internal server error occurred while fetching game details"
         )
 
+

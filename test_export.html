@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Export Test - Direct API Call</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #1b2838;
+            color: #c7d5e0;
+        }
+        h1 {
+            color: #66c0f4;
+        }
+        button {
+            background: #5c7e10;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            margin: 10px 5px;
+            cursor: pointer;
+            font-size: 16px;
+            border-radius: 4px;
+        }
+        button:hover {
+            background: #6fa010;
+        }
+        button:disabled {
+            background: #555;
+            cursor: not-allowed;
+        }
+        #result {
+            background: #2a475e;
+            padding: 15px;
+            border-radius: 4px;
+            margin-top: 20px;
+            white-space: pre-wrap;
+            font-family: monospace;
+            font-size: 14px;
+        }
+        .success {
+            color: #90ee90;
+        }
+        .error {
+            color: #ff6b6b;
+        }
+        .info {
+            color: #66c0f4;
+        }
+    </style>
+</head>
+<body>
+    <h1>🎮 Steam Game Search - Export Test</h1>
+    <p>This page tests the export API directly, bypassing Next.js cache.</p>
+    
+    <div>
+        <button onclick="testExportCSV()">📥 Test Export CSV</button>
+        <button onclick="testExportJSON()">📥 Test Export JSON</button>
+        <button onclick="testImport()">📤 Test Import (requires file)</button>
+        <button onclick="clearResult()">Clear</button>
+    </div>
+    
+    <div id="result">Ready to test...</div>
+    
+    <script>
+        const API_BASE = 'http://localhost:8000';
+        const resultDiv = document.getElementById('result');
+        
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const className = type === 'error' ? 'error' : type === 'success' ? 'success' : 'info';
+            resultDiv.innerHTML += `<span class="${className}">[${timestamp}] ${message}</span>\n`;
+            resultDiv.scrollTop = resultDiv.scrollHeight;
+        }
+        
+        function clearResult() {
+            resultDiv.innerHTML = 'Ready to test...\n';
+        }
+        
+        async function testExportCSV() {
+            log('🚀 Testing CSV Export...', 'info');
+            
+            const requestBody = {
+                query: '',
+                filters: null,
+                sort_by: 'relevance',
+                offset: 0,
+                limit: 10
+            };
+            
+            log(`📤 Request: ${JSON.stringify(requestBody, null, 2)}`, 'info');
+            
+            try {
+                const response = await fetch(`${API_BASE}/api/v1/export/csv`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(requestBody)
+                });
+                
+                log(`📥 Response Status: ${response.status} ${response.statusText}`, 
+                    response.ok ? 'success' : 'error');
+                
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `steam_games_${Date.now()}.csv`;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    window.URL.revokeObjectURL(url);
+                    
+                    log(`✅ Success! Downloaded ${blob.size} bytes`, 'success');
+                } else {
+                    const errorText = await response.text();
+                    log(`❌ Error Response: ${errorText}`, 'error');
+                }
+            } catch (error) {
+                log(`❌ Exception: ${error.message}`, 'error');
+                console.error(error);
+            }
+        }
+        
+        async function testExportJSON() {
+            log('🚀 Testing JSON Export...', 'info');
+            
+            const requestBody = {
+                query: 'action',
+                filters: {
+                    price_max: 5000
+                },
+                sort_by: 'price_asc',
+                offset: 0,
+                limit: 10
+            };
+            
+            log(`📤 Request: ${JSON.stringify(requestBody, null, 2)}`, 'info');
+            
+            try {
+                const response = await fetch(`${API_BASE}/api/v1/export/json`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(requestBody)
+                });
+                
+                log(`📥 Response Status: ${response.status} ${response.statusText}`, 
+                    response.ok ? 'success' : 'error');
+                
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `steam_games_${Date.now()}.json`;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    window.URL.revokeObjectURL(url);
+                    
+                    log(`✅ Success! Downloaded ${blob.size} bytes`, 'success');
+                } else {
+                    const errorText = await response.text();
+                    log(`❌ Error Response: ${errorText}`, 'error');
+                }
+            } catch (error) {
+                log(`❌ Exception: ${error.message}`, 'error');
+                console.error(error);
+            }
+        }
+        
+        async function testImport() {
+            log('📤 Testing Import...', 'info');
+            log('⚠️ Import test requires file selection', 'info');
+            
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.csv,.json';
+            
+            input.onchange = async (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+                
+                log(`📁 Selected file: ${file.name} (${file.size} bytes)`, 'info');
+                
+                const formData = new FormData();
+                formData.append('file', file);
+                
+                const endpoint = file.name.endsWith('.csv') ? 'import/csv' : 'import/json';
+                
+                try {
+                    const response = await fetch(`${API_BASE}/api/v1/${endpoint}`, {
+                        method: 'POST',
+                        body: formData
+                    });
+                    
+                    log(`📥 Response Status: ${response.status} ${response.statusText}`, 
+                        response.ok ? 'success' : 'error');
+                    
+                    const data = await response.json();
+                    log(`📊 Response: ${JSON.stringify(data, null, 2)}`, 
+                        response.ok ? 'success' : 'error');
+                    
+                    if (response.ok) {
+                        log(`✅ Successfully imported ${data.count} games!`, 'success');
+                    }
+                } catch (error) {
+                    log(`❌ Exception: ${error.message}`, 'error');
+                    console.error(error);
+                }
+            };
+            
+            input.click();
+        }
+        
+        // Auto-test on load
+        log('🎯 Page loaded. Backend: ' + API_BASE, 'info');
+        log('👆 Click buttons above to test export/import functionality', 'info');
+        log('', 'info');
+    </script>
+</body>
+</html>
+
+

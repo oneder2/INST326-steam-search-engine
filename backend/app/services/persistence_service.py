@@ -479,3 +479,4 @@ class PersistenceService:
             logger.error(f"❌ Failed to generate report: {e}")
             return None
 
+

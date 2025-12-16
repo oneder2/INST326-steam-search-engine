@@ -37,14 +37,33 @@ async def export_search_results_csv(
     3. Returns file for download
     """
     try:
-        # Execute search
+        logger.info(f"📥 Export CSV request RECEIVED")
+        logger.info(f"   Query: '{request.query}'")
+        logger.info(f"   Filters: {request.filters}")
+        logger.info(f"   Sort: {request.sort_by}")
+        logger.info(f"   Offset: {request.offset}")
+        logger.info(f"   Limit: {request.limit}")
+        logger.info(f"   Full request dict: {request.dict()}")
+        
+        # Execute search - pass individual parameters, not the request object
         search_service = SearchService(db)
-        results = await search_service.search(request)
+        results_dict = await search_service.search(
+            query=request.query,
+            filters=request.filters,
+            sort_by=request.sort_by,
+            offset=request.offset,
+            limit=request.limit
+        )
+        
+        # Extract games list from results dictionary
+        games_list = results_dict['results'] if isinstance(results_dict, dict) else results_dict.results
+        
+        logger.info(f"Found {len(games_list)} results to export")
         
         # Export to CSV
         persistence = PersistenceService()
         file_path = persistence.export_to_csv(
-            results['results'],
+            games_list,
             f"search_results_{request.query or 'all'}.csv"
         )
         
@@ -77,14 +96,27 @@ async def export_search_results_json(
     Export search results to JSON format.
     """
     try:
-        # Execute search
+        logger.info(f"📥 Export JSON request: query='{request.query}', filters={request.filters}")
+        
+        # Execute search - pass individual parameters, not the request object
         search_service = SearchService(db)
-        results = await search_service.search(request)
+        results_dict = await search_service.search(
+            query=request.query,
+            filters=request.filters,
+            sort_by=request.sort_by,
+            offset=request.offset,
+            limit=request.limit
+        )
+        
+        # Extract games list from results dictionary
+        games_list = results_dict['results'] if isinstance(results_dict, dict) else results_dict.results
+        
+        logger.info(f"Found {len(games_list)} results to export")
         
         # Export to JSON
         persistence = PersistenceService()
         file_path = persistence.export_to_json(
-            results['results'],
+            games_list,
             f"search_results_{request.query or 'all'}.json"
         )
         

@@ -17,14 +17,15 @@
  * - Search suggestions
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/router';
 import MainLayout from '@/components/Layout/MainLayout';
 import SearchBox from '@/components/Search/SearchBox';
 import SearchResults from '@/components/Search/SearchResults';
 import { GameResult } from '@/types/api';
 import { SEARCH_LIMITS } from '@/constants/api';
-import { simpleSearch } from '@/services/api';
+import { simpleSearch, exportSearchResultsCSV, exportSearchResultsJSON, importGamesFromCSV, importGamesFromJSON } from '@/services/api';
+import { exportSearchPreset, importSearchPreset, SearchPreset, savePresetToLocalStorage, loadPresetsFromLocalStorage } from '@/services/searchPresets';
 
 /**
  * Search Page Component
@@ -48,6 +49,12 @@ export default function SearchPage() {
   const [selectedGenres, setSelectedGenres] = useState<string[]>([]);
   const [gameType, setGameType] = useState<string>('');
   const [sortBy, setSortBy] = useState<string>('relevance');
+  const [isExporting, setIsExporting] = useState(false);
+  const [isImporting, setIsImporting] = useState(false);
+  const [exportLimit, setExportLimit] = useState(100); // Export limit 1-100
+  const presetInputRef = useRef<HTMLInputElement>(null);
+  const [savedPresets, setSavedPresets] = useState<SearchPreset[]>([]);
+  const [showPresetsMenu, setShowPresetsMenu] = useState(false);
   
   // Available genres (could be fetched from API in Phase 2)
   const availableGenres = [
@@ -256,6 +263,198 @@ export default function SearchPage() {
   };
 
   /**
+   * Load saved presets on mount
+   */
+  useEffect(() => {
+    setSavedPresets(loadPresetsFromLocalStorage());
+  }, []);
+
+  /**
+   * Export current search preset
+   */
+  const handleExportSearchPreset = () => {
+    try {
+      const presetName = prompt('Enter a name for this search preset:', 
+        `My ${selectedGenres.join('+')} Search`);
+      
+      if (presetName === null) return; // User cancelled
+      
+      exportSearchPreset(
+        searchQuery,
+        {
+          genres: selectedGenres,
+          priceMax: priceMax,
+          gameType: gameType,
+        },
+        sortBy,
+        presetName || undefined
+      );
+      
+      alert('✅ Search preset exported successfully!');
+    } catch (error) {
+      console.error('Export preset failed:', error);
+      alert('❌ Failed to export preset. Please try again.');
+    }
+  };
+
+  /**
+   * Import and apply search preset
+   */
+  const handleImportSearchPreset = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setIsImporting(true);
+    try {
+      const preset = await importSearchPreset(file);
+      
+      // Apply the preset to current search state
+      setSearchQuery(preset.query);
+      setSelectedGenres(preset.filters.genres || []);
+      setPriceMax(preset.filters.price_max ? preset.filters.price_max / 100 : undefined);
+      setGameType(preset.filters.type || '');
+      setSortBy(preset.sort_by);
+      setCurrentPage(1);
+      
+      // Save to localStorage
+      savePresetToLocalStorage(preset);
+      setSavedPresets(loadPresetsFromLocalStorage());
+      
+      // Execute search with imported preset
+      await loadGamesWithParams(
+        preset.query,
+        preset.filters.price_max ? preset.filters.price_max / 100 : undefined,
+        preset.filters.genres || [],
+        preset.filters.type || '',
+        preset.sort_by,
+        1
+      );
+      
+      alert(`✅ Loaded preset: "${preset.name}"\nExecuting search...`);
+    } catch (error: any) {
+      console.error('Import preset failed:', error);
+      alert(`❌ Import failed: ${error.message || 'Please try again.'}`);
+    } finally {
+      setIsImporting(false);
+      // Reset file input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
+  };
+
+  /**
+   * Apply a saved preset from localStorage
+   */
+  const handleApplySavedPreset = async (preset: SearchPreset) => {
+    try {
+      // Apply the preset
+      setSearchQuery(preset.query);
+      setSelectedGenres(preset.filters.genres || []);
+      setPriceMax(preset.filters.price_max ? preset.filters.price_max / 100 : undefined);
+      setGameType(preset.filters.type || '');
+      setSortBy(preset.sort_by);
+      setCurrentPage(1);
+      setShowPresetsMenu(false);
+      
+      // Execute search
+      await loadGamesWithParams(
+        preset.query,
+        preset.filters.price_max ? preset.filters.price_max / 100 : undefined,
+        preset.filters.genres || [],
+        preset.filters.type || '',
+        preset.sort_by,
+        1
+      );
+      
+      alert(`✅ Applied preset: "${preset.name}"`);
+    } catch (error) {
+      console.error('Apply preset failed:', error);
+      alert('❌ Failed to apply preset.');
+    }
+  };
+
+  /**
+   * Handle export to CSV
+   */
+  const handleExportCSV = async () => {
+    setIsExporting(true);
+    try {
+      // Build filters object, only include if there are actual filters
+      let filters: any = null;
+      if (priceMax !== undefined && priceMax > 0) {
+        filters = filters || {};
+        filters.price_max = priceMax * 100; // Convert to cents
+      }
+      if (selectedGenres.length > 0) {
+        filters = filters || {};
+        filters.genres = selectedGenres;
+      }
+      if (gameType) {
+        filters = filters || {};
+        filters.type = gameType;
+      }
+      
+      await exportSearchResultsCSV({
+        query: searchQuery || '',  // Ensure it's a string
+        filters: filters,  // Pass null if no filters
+        sort_by: sortBy as any,
+        offset: 0,
+        limit: exportLimit, // User-defined export limit (1-100)
+      });
+      
+      // Show success message (could use a toast notification)
+      alert('✅ CSV file downloaded successfully!');
+    } catch (error) {
+      console.error('Export failed:', error);
+      alert('❌ Export failed. Please try again.');
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
+  /**
+   * Handle export to JSON
+   */
+  const handleExportJSON = async () => {
+    setIsExporting(true);
+    try {
+      // Build filters object, only include if there are actual filters
+      let filters: any = null;
+      if (priceMax !== undefined && priceMax > 0) {
+        filters = filters || {};
+        filters.price_max = priceMax * 100; // Convert to cents
+      }
+      if (selectedGenres.length > 0) {
+        filters = filters || {};
+        filters.genres = selectedGenres;
+      }
+      if (gameType) {
+        filters = filters || {};
+        filters.type = gameType;
+      }
+      
+      await exportSearchResultsJSON({
+        query: searchQuery || '',  // Ensure it's a string
+        filters: filters,  // Pass null if no filters
+        sort_by: sortBy as any,
+        offset: 0,
+        limit: exportLimit, // User-defined export limit (1-100)
+      });
+      
+      // Show success message (could use a toast notification)
+      alert('✅ JSON file downloaded successfully!');
+    } catch (error) {
+      console.error('Export failed:', error);
+      alert('❌ Export failed. Please try again.');
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
+  // Removed old import functions - replaced by search preset import
+
+  /**
    * Calculate pagination info
    */
   const totalPages = Math.ceil(totalGames / SEARCH_LIMITS.DEFAULT_LIMIT);
@@ -421,38 +620,202 @@ export default function SearchPage() {
           {/* Results Area */}
           <div className="lg:col-span-3">
             {/* Results Header */}
-            <div className="mb-6 flex items-center justify-between">
-              <div>
-                <h2 className="text-xl font-semibold text-white">
-                  {searchQuery ? `Results for "${searchQuery}"` : 'All Games'}
-                  {totalGames > 0 && (
-                    <span className="text-gray-300 font-normal ml-2">
-                      ({totalGames.toLocaleString()} found)
-                    </span>
-                  )}
-                </h2>
+            <div className="mb-6">
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <h2 className="text-xl font-semibold text-white">
+                    {searchQuery ? `Results for "${searchQuery}"` : 'All Games'}
+                    {totalGames > 0 && (
+                      <span className="text-gray-300 font-normal ml-2">
+                        ({totalGames.toLocaleString()} found)
+                      </span>
+                    )}
+                  </h2>
+                </div>
+                
+                {/* Sort Dropdown */}
+                <div>
+                  <select
+                    value={sortBy}
+                    onChange={(e) => {
+                      const newSort = e.target.value;
+                      setSortBy(newSort);
+                      setCurrentPage(1);
+                      loadGamesWithParams(searchQuery, priceMax, selectedGenres, gameType, newSort, 1);
+                    }}
+                    className="px-3 py-2 bg-steam-blue border border-steam-blue-light rounded text-white text-sm focus:outline-none focus:border-steam-green"
+                  >
+                    <option value="relevance">Sort by Relevance</option>
+                    <option value="price_asc">Price: Low to High</option>
+                    <option value="price_desc">Price: High to Low</option>
+                    <option value="reviews">Most Reviewed</option>
+                    <option value="newest">Newest First</option>
+                    <option value="oldest">Oldest First</option>
+                    <option value="name">Name (A-Z)</option>
+                  </select>
+                </div>
               </div>
               
-              {/* Sort Dropdown */}
-              <div>
-                <select
-                  value={sortBy}
-                  onChange={(e) => {
-                    const newSort = e.target.value;
-                    setSortBy(newSort);
-                    setCurrentPage(1);
-                    loadGamesWithParams(searchQuery, priceMax, selectedGenres, gameType, newSort, 1);
-                  }}
-                  className="px-3 py-2 bg-steam-blue border border-steam-blue-light rounded text-white text-sm focus:outline-none focus:border-steam-green"
-                >
-                  <option value="relevance">Sort by Relevance</option>
-                  <option value="price_asc">Price: Low to High</option>
-                  <option value="price_desc">Price: High to Low</option>
-                  <option value="reviews">Most Reviewed</option>
-                  <option value="newest">Newest First</option>
-                  <option value="oldest">Oldest First</option>
-                  <option value="name">Name (A-Z)</option>
-                </select>
+              {/* Search Preset & Export Buttons */}
+              <div className="flex items-center gap-4">
+                {/* Search Preset Controls */}
+                <div className="flex items-center gap-3">
+                  <span className="text-sm text-gray-400">Search Presets:</span>
+                  
+                  {/* Export Current Search */}
+                  <button
+                    onClick={handleExportSearchPreset}
+                    disabled={isLoading}
+                    className="px-3 py-2 bg-indigo-600 border border-indigo-500 rounded text-white text-sm font-medium hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
+                    title="Save current search settings"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
+                    </svg>
+                    Save Search
+                  </button>
+                  
+                  {/* Import Search Preset */}
+                  <input
+                    ref={presetInputRef}
+                    type="file"
+                    accept=".json"
+                    onChange={handleImportSearchPreset}
+                    className="hidden"
+                  />
+                  <button
+                    onClick={() => presetInputRef.current?.click()}
+                    disabled={isImporting || isLoading}
+                    className="px-3 py-2 bg-indigo-600 border border-indigo-500 rounded text-white text-sm font-medium hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
+                    title="Load saved search settings"
+                  >
+                    {isImporting ? (
+                      <>
+                        <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        Loading...
+                      </>
+                    ) : (
+                      <>
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                        </svg>
+                        Load Search
+                      </>
+                    )}
+                  </button>
+                  
+                  {/* Recent Presets Dropdown */}
+                  {savedPresets.length > 0 && (
+                    <div className="relative">
+                      <button
+                        onClick={() => setShowPresetsMenu(!showPresetsMenu)}
+                        className="px-3 py-2 bg-gray-700 border border-gray-600 rounded text-white text-sm font-medium hover:bg-gray-600 transition-colors flex items-center gap-2"
+                        title="Quick access to recent searches"
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        Recent ({savedPresets.length})
+                      </button>
+                      
+                      {showPresetsMenu && (
+                        <div className="absolute right-0 mt-2 w-80 bg-[#1b2838] border border-steam-blue-light rounded-md shadow-2xl z-20 max-h-96 overflow-y-auto">
+                          <div className="p-2 bg-[#1b2838]">
+                            <div className="text-xs text-gray-400 px-2 py-1 border-b border-gray-700 mb-2 bg-[#16202d]">
+                              Recent Search Presets
+                            </div>
+                            {savedPresets.slice().reverse().map((preset, idx) => (
+                              <button
+                                key={preset.timestamp}
+                                onClick={() => handleApplySavedPreset(preset)}
+                                className="w-full text-left px-3 py-2 text-sm text-gray-300 bg-[#16202d] hover:bg-[#2a475e] rounded mb-1 transition-colors"
+                              >
+                                <div className="font-medium text-white">{preset.name}</div>
+                                <div className="text-xs text-gray-400 mt-1">{preset.description}</div>
+                                <div className="text-xs text-gray-500 mt-1">
+                                  {new Date(preset.timestamp).toLocaleString()}
+                                </div>
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                {/* Export Game List Buttons */}
+                {hasGames && (
+                  <div className="flex items-center gap-3 border-l border-gray-700 pl-4">
+                    <span className="text-sm text-gray-400">Export game list:</span>
+                    
+                    {/* Export Limit Selector */}
+                    <div className="flex items-center gap-2">
+                      <label className="text-xs text-gray-400">Limit:</label>
+                      <input
+                        type="number"
+                        min="1"
+                        max="100"
+                        value={exportLimit}
+                        onChange={(e) => {
+                          const val = parseInt(e.target.value);
+                          if (val >= 1 && val <= 100) {
+                            setExportLimit(val);
+                          }
+                        }}
+                        className="w-16 px-2 py-1 bg-steam-dark border border-steam-blue-light rounded text-white text-sm text-center focus:outline-none focus:border-steam-green"
+                      />
+                    </div>
+                    
+                    <button
+                      onClick={handleExportCSV}
+                      disabled={isExporting || isLoading}
+                      className="px-4 py-2 bg-steam-green border border-steam-green-light rounded text-white text-sm font-medium hover:bg-green-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
+                    >
+                    {isExporting ? (
+                      <>
+                        <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        Exporting...
+                      </>
+                    ) : (
+                      <>
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                        Export CSV
+                      </>
+                    )}
+                  </button>
+                  <button
+                    onClick={handleExportJSON}
+                    disabled={isExporting || isLoading}
+                    className="px-4 py-2 bg-steam-blue border border-steam-blue-light rounded text-white text-sm font-medium hover:bg-steam-blue-light disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
+                  >
+                    {isExporting ? (
+                      <>
+                        <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        Exporting...
+                      </>
+                    ) : (
+                      <>
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                        Export JSON
+                      </>
+                    )}
+                  </button>
+                </div>
+                )}
               </div>
             </div>
 
