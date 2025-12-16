@@ -109,10 +109,12 @@ export default function SearchBox({
       if (query.trim().length >= SEARCH_LIMITS.MIN_QUERY_LENGTH) {
         setIsLoading(true);
         try {
-          // 调用真实API获取搜索建议 / Call real API for search suggestions
-          const response = await getSearchSuggestions(query);
-          setSuggestions(response.data.suggestions);
-          setShowSuggestionsList(true);
+          // TODO: Search suggestions API not yet implemented
+          // Temporarily disable to prevent 404 errors
+          // const response = await getSearchSuggestions(query);
+          // setSuggestions(response.data.suggestions);
+          setSuggestions([]);
+          setShowSuggestionsList(false);
         } catch (error) {
           console.error('Failed to fetch suggestions:', error);
           setSuggestions([]);

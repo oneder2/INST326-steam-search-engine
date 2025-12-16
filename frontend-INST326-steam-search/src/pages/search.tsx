@@ -97,16 +97,18 @@ export default function SearchPage() {
       const transformedGames = response.data.results.map((game: any) => ({
         id: game.game_id,
         title: game.title,
-        score: game.relevance_score || 0,
+        score: game.bm25_score || game.relevance_score || 0,
         price: game.price,
         genres: game.genres || [],
+        categories: game.categories || [],
         review_status: 'Mixed', // TODO: Get from backend in Phase 2
         deck_compatible: false, // TODO: Get from backend in Phase 2
         description: game.description || '',
         coop_type: game.coop_type,
         release_date: game.release_date,
-        developer: game.developer,
-        publisher: game.publisher,
+        type: game.type || 'game',
+        total_reviews: game.total_reviews || 0,
+        bm25_score: game.bm25_score,
       }));
       
       setGames(transformedGames);
@@ -645,7 +647,7 @@ export default function SearchPage() {
                     }}
                     className="px-3 py-2 bg-steam-blue border border-steam-blue-light rounded text-white text-sm focus:outline-none focus:border-steam-green"
                   >
-                    <option value="relevance">Sort by Relevance</option>
+                    <option value="relevance">Sort by Relevance (BM25)</option>
                     <option value="price_asc">Price: Low to High</option>
                     <option value="price_desc">Price: High to Low</option>
                     <option value="reviews">Most Reviewed</option>

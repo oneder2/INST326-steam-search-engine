@@ -210,10 +210,16 @@ class SearchService:
                 logger.debug("Applied sort: name ASC")
             
             else:  # SortBy.RELEVANCE (default)
-                # Phase 1: Sort by name when no better relevance available
-                # TODO Phase 3: Sort by BM25 score DESC
-                query_builder = query_builder.order('name', desc=False)
-                logger.debug("Applied sort: name ASC (relevance placeholder)")
+                # Phase 3: BM25 sorting is done in post-processing
+                # Don't apply database-level sorting for relevance
+                # BM25 scores will be calculated and sorted after query
+                if not query.strip():
+                    # No query = no relevance, sort by name as fallback
+                    query_builder = query_builder.order('name', desc=False)
+                    logger.debug("Applied sort: name ASC (no query, fallback)")
+                else:
+                    # With query: fetch results without sorting, will sort by BM25 later
+                    logger.debug("Skipping database sort - will sort by BM25 score in post-processing")
             
             # ===================================================================
             # PAGINATION
@@ -239,11 +245,11 @@ class SearchService:
             # ===================================================================
             # TRANSFORM RESULTS
             # ===================================================================
+            # Phase 3: Calculate BM25 scores for all results together (batch)
+            bm25_scores = self._calculate_bm25_scores_batch(result.data, query)
+            
             results = []
-            for game in result.data:
-                # Calculate relevance scores
-                # Phase 3: Use BM25 for better relevance scoring
-                bm25_score = self._calculate_bm25_score(game, query)
+            for i, game in enumerate(result.data):
                 # Keep v2 score for comparison/fallback
                 simple_score = self._calculate_relevance_score_v2(game, query)
                 
@@ -259,7 +265,7 @@ class SearchService:
                     'release_date': game['release_date'],
                     'total_reviews': game['total_reviews'],
                     'relevance_score': simple_score,  # Keep for backward compatibility
-                    'bm25_score': bm25_score  # New BM25 score
+                    'bm25_score': bm25_scores[i]  # BM25 score from batch calculation
                 })
             
             # ===================================================================
@@ -285,62 +291,80 @@ class SearchService:
             logger.error(f"❌ Search failed: {e}", exc_info=True)
             raise
     
-    def _calculate_bm25_score(self, game: Dict[str, Any], query: str) -> float:
+    def _calculate_bm25_scores_batch(self, games: List[Dict[str, Any]], query: str) -> List[float]:
         """
-        Calculate BM25 relevance score for a game (Phase 3)
+        Calculate BM25 relevance scores for a batch of games (Phase 3)
         
         BM25 (Best Matching 25) is a probabilistic ranking function used in
-        information retrieval. It calculates relevance based on term frequency
-        and inverse document frequency.
+        information retrieval. This batch implementation calculates scores
+        across all documents together for better IDF (inverse document frequency).
         
         This implementation:
-        - Tokenizes query and document text
+        - Tokenizes query and all document texts
+        - Creates BM25 corpus from all documents
         - Calculates BM25 score for name field (weight: 2.0)
         - Calculates BM25 score for description field (weight: 1.0)
         - Combines scores with field weighting
         
         Args:
-            game: Game data dictionary
+            games: List of game data dictionaries
             query: Search query
         
         Returns:
-            BM25 relevance score (higher is more relevant)
+            List of BM25 relevance scores (higher is more relevant)
         """
-        if not query.strip():
-            return 0.0
+        if not query.strip() or not games:
+            return [0.0] * len(games)
         
         # Tokenize query
         query_tokens = self._tokenize(query)
         if not query_tokens:
-            return 0.0
+            return [0.0] * len(games)
         
-        total_score = 0.0
+        scores = []
         
         # ===================================================================
         # NAME FIELD (Weight: 2.0 - highest priority)
         # ===================================================================
-        name = game.get('name', '')
-        if name:
-            name_tokens = self._tokenize(name)
-            if name_tokens:
-                # Create BM25 model for this single document
-                bm25_name = BM25Okapi([name_tokens])
-                name_score = bm25_name.get_scores(query_tokens)[0]
-                total_score += name_score * 2.0
+        # Build corpus of all game names
+        name_corpus = []
+        for game in games:
+            name = game.get('name', '')
+            name_tokens = self._tokenize(name) if name else []
+            name_corpus.append(name_tokens if name_tokens else [''])
+        
+        # Create BM25 model for all names
+        if name_corpus:
+            bm25_names = BM25Okapi(name_corpus)
+            name_scores = bm25_names.get_scores(query_tokens)
+        else:
+            name_scores = [0.0] * len(games)
         
         # ===================================================================
         # DESCRIPTION FIELD (Weight: 1.0)
         # ===================================================================
-        description = game.get('short_description', '')
-        if description:
-            desc_tokens = self._tokenize(description)
-            if desc_tokens:
-                # Create BM25 model for this single document
-                bm25_desc = BM25Okapi([desc_tokens])
-                desc_score = bm25_desc.get_scores(query_tokens)[0]
-                total_score += desc_score * 1.0
+        # Build corpus of all descriptions
+        desc_corpus = []
+        for game in games:
+            description = game.get('short_description', '')
+            desc_tokens = self._tokenize(description) if description else []
+            desc_corpus.append(desc_tokens if desc_tokens else [''])
         
-        return round(total_score, 4)
+        # Create BM25 model for all descriptions
+        if desc_corpus:
+            bm25_descs = BM25Okapi(desc_corpus)
+            desc_scores = bm25_descs.get_scores(query_tokens)
+        else:
+            desc_scores = [0.0] * len(games)
+        
+        # ===================================================================
+        # COMBINE SCORES
+        # ===================================================================
+        for i in range(len(games)):
+            total_score = (name_scores[i] * 2.0) + (desc_scores[i] * 1.0)
+            scores.append(round(total_score, 4))
+        
+        return scores
     
     def _calculate_relevance_score_v2(self, game: Dict[str, Any], query: str) -> float:
         """
